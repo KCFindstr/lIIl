@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{builtin::Module, variable::VarMess};
+use crate::{builtin::Module, data::variable::VarMess};
 
 pub struct Context {
     pub parent: Option<*const Context>,

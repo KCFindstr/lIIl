@@ -1,9 +1,9 @@
 use std::mem;
 
 use crate::{
-    context::Context,
+    data::context::Context,
     statement::CodeExecError,
-    variable::{SymbolProvider, VarArray, VarType},
+    data::variable::{SymbolProvider, VarArray, VarType},
 };
 
 fn expr_type_error_2(ctx: &Context, lhs: VarType, rhs: VarType) -> CodeExecError {

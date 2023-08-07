@@ -1,8 +1,8 @@
 use crate::{
-    context::Context,
+    data::context::Context,
+    data::variable::{SymbolProvider, VarType},
     module::NativeNode,
     statement::CodeExecError,
-    variable::{SymbolProvider, VarType},
 };
 
 pub struct CpuModule {

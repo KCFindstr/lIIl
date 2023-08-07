@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    context::Context,
+    data::context::Context,
     module::Node,
     statement::{CodeExecError, Statement},
 };
@@ -111,8 +111,14 @@ pub struct VarArray {
 }
 
 #[derive(Debug, Clone)]
+pub struct VarRef {
+    pub id: i64,
+}
+
+#[derive(Debug, Clone)]
 pub enum VarType {
     Nzero,
+    Bool(bool),
     Int(i64),
     Float(f64),
     String(String),
@@ -120,12 +126,14 @@ pub enum VarType {
     Node(Node),
     Array(VarArray),
     Tuple(VarArray),
+    Ref(VarRef),
 }
 
 impl Display for VarType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             VarType::Nzero => write!(f, "N0"),
+            VarType::Bool(val) => write!(f, "{}", val),
             VarType::Int(val) => write!(f, "{}", val),
             VarType::Float(val) => write!(f, "{}", val),
             VarType::String(val) => write!(f, "{}", val),
@@ -133,6 +141,7 @@ impl Display for VarType {
             VarType::Node(val) => write!(f, "{:?}", val),
             VarType::Array(val) => write!(f, "{:?}", val),
             VarType::Tuple(val) => write!(f, "{:?}", val),
+            VarType::Ref(val) => write!(f, "Ref({})", val.id),
         }
     }
 }

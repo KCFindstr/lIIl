@@ -1,6 +1,6 @@
-use crate::{context::Context, module::CodeModule};
+use crate::{data::context::Context, module::CodeModule};
 
-mod cpu;
+pub mod cpu;
 
 pub fn all_builtin_modules() -> Vec<Module> {
     vec![Module::Cpu(cpu::CpuModule::new())]

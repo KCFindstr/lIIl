@@ -2,9 +2,9 @@ use std::fmt;
 
 use crate::{
     builtin::Module,
-    context::Context,
+    data::context::Context,
+    data::variable::{SymbolProvider, VarNode, VarType},
     statement::{CodeExecError, Statement},
-    variable::{SymbolProvider, VarNode, VarType},
 };
 
 #[derive(Clone)]

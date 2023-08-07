@@ -2,12 +2,11 @@
 use clap::Parser;
 use module::CodeModule;
 mod builtin;
-mod context;
+mod data;
 mod expr;
 mod module;
 mod parser;
 mod statement;
-mod variable;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
