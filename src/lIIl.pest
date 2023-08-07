@@ -1,0 +1,95 @@
+WHITESPACE = _{ WHITE_SPACE }
+COMMENT = _{
+    (("<--" | "v--" | "^--") ~ (!(NEWLINE) ~ ANY)* ~ NEWLINE)
+  | ("v"{3,} ~ (!("^"{3}) ~ ANY)* ~ "^"{3,})
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Common definitions
+////////////////////////////////////////////////////////////////////////////////
+double_quote = _{ "\"" }
+
+single_quote = _{ "'" }
+
+left_brace = _{ "{" }
+
+right_brace = _{ "}" }
+
+left_paren = _{ "(" }
+
+right_paren = _{ ")" }
+
+pos_neg_op = _{ "+" | "-" }
+
+escape = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" | NEWLINE) }
+
+identifier = @{ XID_START ~ XID_CONTINUE* }
+
+identifier_tuple = { identifier ~ (tuple_op ~ identifier)* }
+
+symbol = @{ identifier ~ ("->" ~ identifier)* }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Program
+////////////////////////////////////////////////////////////////////////////////
+program = { SOI ~ ((rm_stmt ~ stmt_end) | node_def_stmt)* ~ EOI }
+
+stmt = {
+  ((rm_stmt | expr)? ~ stmt_end)
+  | node_def_stmt
+}
+
+stmt_end = _{ "." }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Statements
+////////////////////////////////////////////////////////////////////////////////
+/// rm stmt.
+package_name = @{ identifier ~ ("/" ~ identifier)* }
+
+rm_stmt_prefix = _{ "rm" | "del" }
+
+rm_stmt = { rm_stmt_prefix ~ package_name }
+
+/// Node definition.
+node_def_stmt = {
+    identifier ~ "<<" ~ identifier_tuple ~ node_block
+}
+
+node_block = { left_brace ~ stmt* ~ right_brace }
+
+////////////////////////////////////////////////////////////////////////////////
+/// Expressions
+////////////////////////////////////////////////////////////////////////////////
+
+expr = {
+    expr_prefix? ~ expr_primary ~ (expr_infix ~ expr_prefix? ~ expr_primary)*
+}
+
+expr_infix = _{ add_op | sub_op | mul_op | div_op | mod_op | node_call_op | tuple_op }
+tuple_op = _{ "|" }
+add_op = _{ "+" }
+sub_op = _{ "-" }
+mul_op = _{ "*" }
+div_op = _{ "/" }
+mod_op = _{ "%" }
+node_call_op = _{ ">>" }
+expr_prefix = _{ pos_neg_op }
+expr_primary = {
+  left_paren ~ expr ~ right_paren
+  | literal_expr
+  | symbol
+}
+
+/// Literal expression
+literal_expr = _{ string_literal | int_literal | float_literal }
+
+/// Literals.
+string_literal = @{
+    (double_quote ~ (escape | !(double_quote | "\\" | NEWLINE) ~ ANY)* ~ double_quote)
+  | (single_quote ~ (escape | !(single_quote | "\\" | NEWLINE) ~ ANY)* ~ single_quote)
+}
+
+int_literal = @{ ASCII_DIGIT+ }
+
+float_literal = @{ ASCII_DIGIT+ ~ "," ~ ASCII_DIGIT* }
