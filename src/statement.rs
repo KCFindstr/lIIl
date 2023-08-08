@@ -11,7 +11,7 @@ impl CodeExecError {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RmStatement {
     module_name: String,
 }
@@ -23,7 +23,7 @@ impl RmStatement {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Statement {
     Rm(RmStatement),
 }

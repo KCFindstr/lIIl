@@ -1,5 +1,9 @@
-#![allow(non_snake_case)] // For package name lIIl.
+#![allow(non_snake_case)]
+use std::cell::RefCell;
+
+// For package name lIIl.
 use clap::Parser;
+use data::context::Context;
 use module::CodeModule;
 mod data;
 mod expr;
@@ -17,6 +21,7 @@ fn main() {
     let args = Args::parse();
     let source_file: String = args.source_file;
     let source = std::fs::read_to_string(source_file.as_str()).unwrap();
-    let mut module = CodeModule::new("lIIl", source_file.as_str());
+    let context = RefCell::new(Context::root());
+    let mut module = CodeModule::new("lIIl", source_file.as_str(), &context);
     let _program = parser::parse(&mut module, &source).unwrap();
 }

@@ -1,9 +1,9 @@
-use std::mem;
+use std::{cell::RefCell, mem};
 
 use crate::{
     data::context::Context,
+    data::{context::SymbolProvider, data::Array, variable::VarType},
     statement::CodeExecError,
-    data::variable::{SymbolProvider, VarArray, VarType},
 };
 
 fn expr_type_error_2(ctx: &Context, lhs: VarType, rhs: VarType) -> CodeExecError {
@@ -44,11 +44,11 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    pub fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         match self {
-            Expr::Int(expr) => expr.eval(ctx),
-            Expr::String(expr) => expr.eval(ctx),
-            Expr::Float(expr) => expr.eval(ctx),
+            Expr::Int(expr) => expr.eval(&ctx.borrow()),
+            Expr::String(expr) => expr.eval(&ctx.borrow()),
+            Expr::Float(expr) => expr.eval(&ctx.borrow()),
             Expr::Add(expr) => expr.eval(ctx),
             Expr::Sub(expr) => expr.eval(ctx),
             Expr::Mul(expr) => expr.eval(ctx),
@@ -97,15 +97,15 @@ pub struct AddExpr {
 }
 
 impl AddExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
-        let (lhs, rhs) = promote_type(ctx, vl, vr)?;
+        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l + r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l + r)),
             (VarType::String(l), VarType::String(r)) => Ok(VarType::String(l + &r)),
-            (l, r) => Err(expr_type_error_2(ctx, l, r)),
+            (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }
 }
@@ -116,14 +116,14 @@ pub struct SubExpr {
 }
 
 impl SubExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
-        let (lhs, rhs) = promote_type(ctx, vl, vr)?;
+        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l - r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l - r)),
-            (l, r) => Err(expr_type_error_2(ctx, l, r)),
+            (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }
 }
@@ -134,14 +134,14 @@ pub struct MulExpr {
 }
 
 impl MulExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
-        let (lhs, rhs) = promote_type(ctx, vl, vr)?;
+        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l * r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l * r)),
-            (l, r) => Err(expr_type_error_2(ctx, l, r)),
+            (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }
 }
@@ -152,14 +152,14 @@ pub struct DivExpr {
 }
 
 impl DivExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
-        let (lhs, rhs) = promote_type(ctx, vl, vr)?;
+        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l / r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l / r)),
-            (l, r) => Err(expr_type_error_2(ctx, l, r)),
+            (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }
 }
@@ -170,14 +170,14 @@ pub struct ModExpr {
 }
 
 impl ModExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
-        let (lhs, rhs) = promote_type(ctx, vl, vr)?;
+        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l % r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l % r)),
-            (l, r) => Err(expr_type_error_2(ctx, l, r)),
+            (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }
 }
@@ -187,12 +187,12 @@ pub struct NegExpr {
 }
 
 impl NegExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let value = self.value.eval(ctx)?;
         match value {
             VarType::Int(value) => Ok(VarType::Int(-value)),
             VarType::Float(value) => Ok(VarType::Float(-value)),
-            _ => Err(expr_type_error_1(ctx, value)),
+            _ => Err(expr_type_error_1(&ctx.borrow(), value)),
         }
     }
 }
@@ -202,12 +202,12 @@ pub struct TupleExpr {
 }
 
 impl TupleExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         let mut items = Vec::new();
         for value in &self.values {
             items.push(value.eval(ctx)?);
         }
-        Ok(VarType::Tuple(VarArray { items }))
+        Ok(VarType::Tuple(Array { items }))
     }
 }
 
@@ -217,30 +217,31 @@ pub struct NodeCallExpr {
 }
 
 impl NodeCallExpr {
-    fn eval(&self, ctx: &mut Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
         match &self.args {
             VarType::Tuple(args) => {
                 let node_name = self.node_name.eval(ctx)?;
                 match node_name {
                     VarType::String(node_name) => {
-                        let var = ctx.vars.get_or_err(ctx, &node_name)?;
+                        let borrowed_ctx = &ctx.borrow();
+                        let var = borrowed_ctx.get_or_err(&borrowed_ctx, &node_name)?;
                         if let VarType::Node(node) = var {
                             return node.exec(ctx, &args.items);
                         } else {
                             return Err(CodeExecError::new(
-                                ctx,
+                                &ctx.borrow(),
                                 format!("Expected node, got {:?}", var),
                             ));
                         }
                     }
                     _ => Err(CodeExecError::new(
-                        ctx,
+                        &ctx.borrow(),
                         format!("Expected string, got {:?}", node_name),
                     )),
                 }
             }
             _ => Err(CodeExecError::new(
-                ctx,
+                &ctx.borrow(),
                 format!("Expected array, got {:?}", self.args),
             )),
         }
