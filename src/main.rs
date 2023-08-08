@@ -1,7 +1,6 @@
 #![allow(non_snake_case)] // For package name lIIl.
 use clap::Parser;
 use module::CodeModule;
-mod builtin;
 mod data;
 mod expr;
 mod module;
