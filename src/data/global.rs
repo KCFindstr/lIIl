@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use super::data::MemData;
 
-struct DataItem {
+pub struct DataItem {
     pub data: MemData,
     ref_count: i64,
 }
@@ -23,8 +23,10 @@ impl DataItem {
     }
 }
 
+pub type DataItemRef = Rc<RefCell<DataItem>>;
+
 pub struct GlobalData {
-    pub variables: HashMap<i64, DataItem>,
+    pub variables: HashMap<i64, DataItemRef>,
     next_id: i64,
 }
 
@@ -40,30 +42,26 @@ impl GlobalData {
         let id = self.next_id();
         let mut item = DataItem::new(data);
         item.add_ref();
-        self.variables.insert(id, item);
+        self.variables.insert(id, Rc::new(RefCell::new(item)));
         return id;
     }
 
-    pub fn get(&self, id: i64) -> Option<&MemData> {
-        if let Some(data) = self.variables.get(&id) {
-            Some(&data.data)
-        } else {
-            None
-        }
+    pub fn get(&mut self, id: i64) -> Option<DataItemRef> {
+        self.variables.get(&id).and_then(|v| Some(v.clone()))
     }
 
-    pub fn obtain(&mut self, id: i64) -> Option<&MemData> {
-        if let Some(data) = self.variables.get_mut(&id) {
-            data.add_ref();
-            Some(&data.data)
+    pub fn obtain(&mut self, id: i64) -> Option<DataItemRef> {
+        if let Some(data) = self.variables.get(&id) {
+            data.borrow_mut().add_ref();
+            Some(data.clone())
         } else {
             None
         }
     }
 
     pub fn release(&mut self, id: i64) {
-        if let Some(data) = self.variables.get_mut(&id) {
-            if data.deref() {
+        if let Some(data) = self.variables.get(&id) {
+            if data.borrow_mut().deref() {
                 self.variables.remove(&id);
             }
         }

@@ -1,14 +1,9 @@
-use std::{
-    borrow::{Borrow, BorrowMut},
-    cell::RefCell,
-    fmt,
-    ops::Deref,
-};
+use std::{cell::RefCell, fmt, ops::Deref};
 
 use crate::statement::{CodeExecError, Statement};
 
 use super::{
-    context::{Context, SymbolProvider},
+    context::{Context, ContextRef},
     variable::VarType,
 };
 
@@ -19,14 +14,10 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn exec(
-        &self,
-        parent: &RefCell<Context>,
-        args: &Vec<VarType>,
-    ) -> Result<VarType, CodeExecError> {
+    pub fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         match self {
             Node::Code(node) => node.exec(parent, args),
-            Node::Native(node) => node.exec(&mut parent.borrow_mut(), args),
+            Node::Native(node) => node.exec(parent, args),
         }
     }
 }
@@ -44,12 +35,8 @@ pub struct CodeNode {
 }
 
 impl CodeNode {
-    pub fn exec(
-        &self,
-        parent: &RefCell<Context>,
-        args: &Vec<VarType>,
-    ) -> Result<VarType, CodeExecError> {
-        let mut ctx = Context::new(&parent);
+    pub fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+        let mut ctx = Context::new(parent);
         if args.len() > self.args.len() {
             return Err(CodeExecError::new(
                 &parent.borrow(),
@@ -74,16 +61,16 @@ impl CodeNode {
 
 #[derive(Clone)]
 pub struct NativeNode {
-    func: fn(parent: &mut Context, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+    func: fn(parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
 }
 
 impl NativeNode {
-    fn exec(&self, parent: &mut Context, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         (self.func)(parent, args)
     }
 
     pub fn as_vartype(
-        func: fn(parent: &mut Context, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+        func: fn(parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
     ) -> VarType {
         VarType::Node(Node::Native(NativeNode { func }))
     }

@@ -1,7 +1,10 @@
 use std::cell::RefCell;
 
 use crate::{
-    data::{context::Context, data::Mess},
+    data::{
+        context::{Context, ContextRef},
+        data::Mess,
+    },
     statement::{CodeExecError, Statement},
 };
 pub mod cpu;
@@ -34,7 +37,7 @@ pub struct CodeModule {
 }
 
 impl CodeModule {
-    pub fn new(name: &str, path: &str, parent: &RefCell<Context>) -> CodeModule {
+    pub fn new(name: &str, path: &str, parent: &ContextRef) -> Self {
         CodeModule {
             name: name.to_string(),
             path: path.to_string(),
@@ -65,7 +68,7 @@ impl NativeModule {
     pub fn new(
         name: &str,
         path: &str,
-        parent: &RefCell<Context>,
+        parent: &ContextRef,
         module: Box<dyn MessProvider>,
     ) -> NativeModule {
         NativeModule {

@@ -1,8 +1,8 @@
-use std::{cell::RefCell, mem};
+use std::mem;
 
 use crate::{
     data::context::Context,
-    data::{context::SymbolProvider, data::Array, variable::VarType},
+    data::{context::ContextRef, data::Array, variable::VarType},
     statement::CodeExecError,
 };
 
@@ -44,11 +44,11 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    pub fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         match self {
-            Expr::Int(expr) => expr.eval(&ctx.borrow()),
-            Expr::String(expr) => expr.eval(&ctx.borrow()),
-            Expr::Float(expr) => expr.eval(&ctx.borrow()),
+            Expr::Int(expr) => expr.eval(ctx),
+            Expr::String(expr) => expr.eval(ctx),
+            Expr::Float(expr) => expr.eval(ctx),
             Expr::Add(expr) => expr.eval(ctx),
             Expr::Sub(expr) => expr.eval(ctx),
             Expr::Mul(expr) => expr.eval(ctx),
@@ -66,7 +66,7 @@ pub struct IntLiteral {
 }
 
 impl IntLiteral {
-    fn eval(&self, _: &Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, _: &ContextRef) -> Result<VarType, CodeExecError> {
         Ok(VarType::Int(self.value))
     }
 }
@@ -76,7 +76,7 @@ pub struct StringLiteral {
 }
 
 impl StringLiteral {
-    fn eval(&self, _: &Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, _: &ContextRef) -> Result<VarType, CodeExecError> {
         Ok(VarType::String(self.value.clone()))
     }
 }
@@ -86,7 +86,7 @@ pub struct FloatLiteral {
 }
 
 impl FloatLiteral {
-    fn eval(&self, _: &Context) -> Result<VarType, CodeExecError> {
+    fn eval(&self, _: &ContextRef) -> Result<VarType, CodeExecError> {
         Ok(VarType::Float(self.value))
     }
 }
@@ -97,7 +97,7 @@ pub struct AddExpr {
 }
 
 impl AddExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -116,7 +116,7 @@ pub struct SubExpr {
 }
 
 impl SubExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -134,7 +134,7 @@ pub struct MulExpr {
 }
 
 impl MulExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -152,7 +152,7 @@ pub struct DivExpr {
 }
 
 impl DivExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -170,7 +170,7 @@ pub struct ModExpr {
 }
 
 impl ModExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -187,7 +187,7 @@ pub struct NegExpr {
 }
 
 impl NegExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let value = self.value.eval(ctx)?;
         match value {
             VarType::Int(value) => Ok(VarType::Int(-value)),
@@ -202,7 +202,7 @@ pub struct TupleExpr {
 }
 
 impl TupleExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
         let mut items = Vec::new();
         for value in &self.values {
             items.push(value.eval(ctx)?);
@@ -217,31 +217,35 @@ pub struct NodeCallExpr {
 }
 
 impl NodeCallExpr {
-    fn eval(&self, ctx: &RefCell<Context>) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+        let borrowed_ctx = &*ctx.borrow();
         match &self.args {
             VarType::Tuple(args) => {
                 let node_name = self.node_name.eval(ctx)?;
                 match node_name {
                     VarType::String(node_name) => {
-                        let borrowed_ctx = &ctx.borrow();
-                        let var = borrowed_ctx.get_or_err(&borrowed_ctx, &node_name)?;
+                        let var = (*borrowed_ctx
+                            .get_symbol_or_err(borrowed_ctx, &node_name)?
+                            .borrow())
+                        .clone();
                         if let VarType::Node(node) = var {
-                            return node.exec(ctx, &args.items);
+                            let result = node.exec(ctx, &args.items)?;
+                            Ok(result)
                         } else {
                             return Err(CodeExecError::new(
-                                &ctx.borrow(),
+                                borrowed_ctx,
                                 format!("Expected node, got {:?}", var),
                             ));
                         }
                     }
                     _ => Err(CodeExecError::new(
-                        &ctx.borrow(),
+                        borrowed_ctx,
                         format!("Expected string, got {:?}", node_name),
                     )),
                 }
             }
             _ => Err(CodeExecError::new(
-                &ctx.borrow(),
+                borrowed_ctx,
                 format!("Expected array, got {:?}", self.args),
             )),
         }
