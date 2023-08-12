@@ -1,4 +1,4 @@
-use std::{cell::RefCell, fmt, ops::Deref};
+use std::{cell::RefCell, fmt, ops::Deref, rc::Rc};
 
 use crate::statement::{CodeExecError, Statement};
 
@@ -36,7 +36,7 @@ pub struct CodeNode {
 
 impl CodeNode {
     pub fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
-        let mut ctx = Context::new(parent);
+        let ctx = Context::new_rc(parent);
         if args.len() > self.args.len() {
             return Err(CodeExecError::new(
                 &parent.borrow(),
@@ -48,12 +48,10 @@ impl CodeNode {
             ));
         }
         for (value, name) in args.iter().zip(&self.args) {
-            ctx.symbols.set(&name, value.clone());
+            ctx.borrow_mut().symbols.set(&name, value.clone());
         }
         for stmt in &self.body {
-            if let Some(ret) = stmt.exec(&ctx)? {
-                return Ok(ret);
-            }
+            stmt.exec(&ctx)?;
         }
         Ok(VarType::Nzero)
     }

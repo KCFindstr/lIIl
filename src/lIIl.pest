@@ -27,15 +27,15 @@ identifier = @{ XID_START ~ XID_CONTINUE* }
 
 identifier_tuple = { identifier ~ (tuple_op ~ identifier)* }
 
-symbol = @{ identifier ~ ("->" ~ identifier)* }
+symbol = @{ identifier ~ ("/" ~ identifier)* }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Program
 ////////////////////////////////////////////////////////////////////////////////
-program = { SOI ~ ((rm_stmt ~ stmt_end) | node_def_stmt)* ~ EOI }
+program = { SOI ~ stmt* ~ EOI }
 
 stmt = {
-  ((rm_stmt | expr)? ~ stmt_end)
+  ((rm_stmt | ass_stmt | expr)? ~ stmt_end)
   | node_def_stmt
 }
 
@@ -50,6 +50,11 @@ package_name = @{ identifier ~ ("/" ~ identifier)* }
 rm_stmt_prefix = _{ "rm" | "del" }
 
 rm_stmt = { rm_stmt_prefix ~ package_name }
+
+/// ass stmt.
+ass_stmt_prefix = _{ "make" | "mk" }
+
+ass_stmt = { ass_stmt_prefix ~ symbol ~ expr}
 
 /// Node definition.
 node_def_stmt = {
@@ -71,7 +76,7 @@ tuple_op = _{ "|" }
 add_op = _{ "+" }
 sub_op = _{ "-" }
 mul_op = _{ "*" }
-div_op = _{ "/" }
+div_op = _{ "÷" }
 mod_op = _{ "%" }
 node_call_op = _{ ">>" }
 expr_prefix = _{ pos_neg_op }

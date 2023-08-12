@@ -2,10 +2,13 @@ use crate::{
     data::node::NativeNode,
     data::{
         context::{Context, ContextRef},
+        data::Mess,
         variable::VarType,
     },
     statement::CodeExecError,
 };
+
+use super::IModule;
 
 pub struct CpuModule {
     op: VarType,
@@ -26,5 +29,12 @@ impl CpuModule {
                 },
             ),
         }
+    }
+}
+impl IModule for CpuModule {
+    fn exec(&self, _ctx: &ContextRef) -> Result<Mess, CodeExecError> {
+        let mut mess = Mess::new();
+        mess.set("op", self.op.clone());
+        Ok(mess)
     }
 }

@@ -1,4 +1,11 @@
-use crate::{data::context::Context, data::variable::VarType};
+use crate::{
+    data::context::Context,
+    data::{context::ContextRef, variable::VarType},
+};
+
+use self::rm::RmStatement;
+
+mod rm;
 
 #[derive(Debug)]
 pub struct CodeExecError {
@@ -12,24 +19,12 @@ impl CodeExecError {
 }
 
 #[derive(Clone, Debug)]
-pub struct RmStatement {
-    module_name: String,
-}
-
-impl RmStatement {
-    fn exec(&self, _ctx: &Context) -> Result<Option<VarType>, CodeExecError> {
-        // TODO: Implement this.
-        Ok(None)
-    }
-}
-
-#[derive(Clone, Debug)]
 pub enum Statement {
     Rm(RmStatement),
 }
 
 impl Statement {
-    pub fn exec(&self, ctx: &Context) -> Result<Option<VarType>, CodeExecError> {
+    pub fn exec(&self, ctx: &ContextRef) -> Result<Option<VarType>, CodeExecError> {
         match self {
             Statement::Rm(stmt) => stmt.exec(ctx),
         }

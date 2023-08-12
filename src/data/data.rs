@@ -18,7 +18,7 @@ pub struct Mess {
 }
 
 impl Mess {
-    pub fn new() -> Mess {
+    pub fn new() -> Self {
         Mess {
             members: HashMap::new(),
         }

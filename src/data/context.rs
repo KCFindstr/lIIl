@@ -1,12 +1,9 @@
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    rc::Rc,
-};
+use std::{cell::RefCell, rc::Rc};
 
 use crate::statement::CodeExecError;
 
 use super::{
-    data::{MemData, Mess},
+    data::Mess,
     global::{DataItemRef, Global},
     variable::VarType,
 };
@@ -16,7 +13,7 @@ pub type GlobalRef = Rc<RefCell<Global>>;
 pub type VarTypeRef = Rc<RefCell<VarType>>;
 
 pub struct Context {
-    pub global: GlobalRef,
+    global: GlobalRef,
     pub parent: Option<ContextRef>,
     pub symbols: Mess,
 }
@@ -30,22 +27,38 @@ impl Context {
             symbols: Mess::new(),
         }
     }
-    pub fn root() -> Self {
+    pub fn new_rc(parent: &ContextRef) -> ContextRef {
+        Rc::new(RefCell::new(Context::new(parent)))
+    }
+    pub fn root(global: &GlobalRef) -> Self {
         Context {
-            global: Rc::new(RefCell::new(Global::new())),
+            global: global.clone(),
             parent: None,
             symbols: Mess::new(),
         }
     }
+    pub fn root_rc() -> ContextRef {
+        let global = Global::new_rc();
+        let ret = Rc::new(RefCell::new(Context::root(&global)));
+        global.borrow_mut().context_root = Some(ret.clone());
+        return ret;
+    }
 }
 
 impl Context {
+    pub fn get_global(&self) -> GlobalRef {
+        self.global.clone()
+    }
+
+    pub fn get_root(&self) -> ContextRef {
+        self.get_global().borrow().context_root.to_owned().unwrap()
+    }
+
     pub fn get_mem(&mut self, name: &str) -> Option<DataItemRef> {
         let item = self.get_symbol(name);
         if let Some(item) = item {
-            if let VarType::Ref(var_ref) = &*item.borrow() {
-                let mut borrowed_global = self.global.borrow_mut();
-                borrowed_global.data.get(var_ref.id)
+            if let VarType::Ref(var_ref) = *item.borrow() {
+                self.global.borrow_mut().data.get(var_ref)
             } else {
                 panic!("Expected reference type, got {:?}", *item)
             }

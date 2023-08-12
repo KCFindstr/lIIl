@@ -21,7 +21,7 @@ fn main() {
     let args = Args::parse();
     let source_file: String = args.source_file;
     let source = std::fs::read_to_string(source_file.as_str()).unwrap();
-    let context = Rc::new(RefCell::new(Context::root()));
+    let context = Context::root_rc();
     let mut module = CodeModule::new("lIIl", source_file.as_str(), &context);
     let _program = parser::parse(&mut module, &source).unwrap();
 }

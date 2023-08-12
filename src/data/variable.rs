@@ -4,11 +4,6 @@ use crate::data::node::Node;
 
 use super::data::Array;
 
-#[derive(Debug, Clone)]
-pub struct VarRef {
-    pub id: i64,
-}
-
 #[derive(Debug, Clone, Default)]
 pub enum VarType {
     #[default]
@@ -19,7 +14,7 @@ pub enum VarType {
     String(String),
     Node(Node),
     Tuple(Array),
-    Ref(VarRef),
+    Ref(i64),
 }
 
 impl Display for VarType {
@@ -32,7 +27,7 @@ impl Display for VarType {
             VarType::String(val) => write!(f, "{}", val),
             VarType::Node(val) => write!(f, "{:?}", val),
             VarType::Tuple(val) => write!(f, "{:?}", val),
-            VarType::Ref(val) => write!(f, "Ref({})", val.id),
+            VarType::Ref(val) => write!(f, "Ref({})", val),
         }
     }
 }

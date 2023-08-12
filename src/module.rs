@@ -1,9 +1,8 @@
-use std::cell::RefCell;
-
 use crate::{
     data::{
         context::{Context, ContextRef},
-        data::Mess,
+        data::{MemData, Mess},
+        variable::VarType,
     },
     statement::{CodeExecError, Statement},
 };
@@ -15,24 +14,26 @@ pub enum Module {
 }
 
 impl Module {
-    pub fn exec(&self) -> Result<&Mess, crate::statement::CodeExecError> {
+    pub const MODULE_SYMBOL_PREFIX: &'static str = "module >> ";
+    pub fn exec(&self) -> Result<VarType, crate::statement::CodeExecError> {
         match self {
             Module::Code(module) => module.exec(),
             Module::Native(module) => module.exec(),
         }
     }
-    pub fn get_ctx_mut(&mut self) -> &mut Context {
+
+    pub fn name(&self) -> &str {
         match self {
-            Module::Code(module) => &mut module.ctx,
-            Module::Native(module) => &mut module.ctx,
+            Module::Code(module) => &module.name,
+            Module::Native(module) => &module.name,
         }
     }
 }
 
 pub struct CodeModule {
     pub name: String,
-    pub path: String,
-    pub ctx: Context,
+    pub path: Vec<String>,
+    pub ctx: ContextRef,
     pub stmts: Vec<Statement>,
 }
 
@@ -40,45 +41,47 @@ impl CodeModule {
     pub fn new(name: &str, path: &str, parent: &ContextRef) -> Self {
         CodeModule {
             name: name.to_string(),
-            path: path.to_string(),
-            ctx: Context::new(parent),
+            path: path.split('/').map(|s| s.to_string()).collect(),
+            ctx: Context::new_rc(parent),
             stmts: Vec::new(),
         }
     }
-    pub fn exec(&self) -> Result<&Mess, CodeExecError> {
+    pub fn exec(&self) -> Result<VarType, CodeExecError> {
         for stmt in &self.stmts {
-            stmt.exec(&self.ctx)?;
+            if let Some(var) = stmt.exec(&self.ctx)? {
+                return Ok(var);
+            }
         }
-        Ok(&self.ctx.symbols)
+        Ok(VarType::Nzero)
     }
 }
 
-pub trait MessProvider {
-    fn get_mess(&self) -> &Mess;
+pub trait IModule {
+    fn exec(&self, ctx: &ContextRef) -> Result<Mess, CodeExecError>;
 }
 
 pub struct NativeModule {
     pub name: String,
     pub path: String,
-    pub ctx: Context,
-    module: Box<dyn MessProvider>,
+    pub ctx: ContextRef,
+    module: Box<dyn IModule>,
 }
 
 impl NativeModule {
-    pub fn new(
-        name: &str,
-        path: &str,
-        parent: &ContextRef,
-        module: Box<dyn MessProvider>,
-    ) -> NativeModule {
+    pub fn new(name: &str, path: &str, parent: &ContextRef, module: Box<dyn IModule>) -> Self {
         NativeModule {
             name: name.to_string(),
             path: path.to_string(),
-            ctx: Context::new(parent),
+            ctx: Context::new_rc(&parent.borrow().get_root()),
             module,
         }
     }
-    pub fn exec(&self) -> Result<&Mess, CodeExecError> {
-        Ok(self.module.get_mess())
+    pub fn exec(&self) -> Result<VarType, CodeExecError> {
+        let mess = self.module.exec(&self.ctx)?;
+        let ctx = self.ctx.borrow();
+        let global = ctx.get_global();
+        let mut global = global.borrow_mut();
+        let id = global.data.add(MemData::Mess(mess));
+        return Ok(VarType::Ref(id));
     }
 }
