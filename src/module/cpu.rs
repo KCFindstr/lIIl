@@ -15,10 +15,11 @@ pub struct CpuModule {
 }
 
 impl CpuModule {
-    pub fn new() -> CpuModule {
+    pub fn new(parent: &ContextRc) -> CpuModule {
         CpuModule {
             op: NativeNode::as_vartype(
-                |_: &ContextRc, args: &Vec<VarType>| -> Result<VarType, CodeExecError> {
+                parent,
+                |args: &Vec<VarType>| -> Result<VarType, CodeExecError> {
                     let joined = args
                         .iter()
                         .map(|item| format!("{}", item))

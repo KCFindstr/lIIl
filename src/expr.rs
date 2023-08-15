@@ -229,7 +229,7 @@ impl NodeCallExpr {
                             .borrow())
                         .clone();
                         if let VarType::Node(node) = var {
-                            let result = node.exec(ctx, &args.items)?;
+                            let result = node.exec(&args.items)?;
                             Ok(result)
                         } else {
                             return Err(CodeExecError::new(

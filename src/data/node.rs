@@ -14,10 +14,10 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn exec(&self, parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    pub fn exec(&self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         match self {
-            Node::Code(node) => node.exec(parent, args),
-            Node::Native(node) => node.exec(parent, args),
+            Node::Code(node) => node.exec(args),
+            Node::Native(node) => node.exec(args),
         }
     }
 }
@@ -28,18 +28,36 @@ impl fmt::Debug for Node {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CodeNode {
+    parent: ContextRc,
     args: Vec<String>,
     body: Vec<Statement>,
 }
 
+impl fmt::Debug for CodeNode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CodeNode")
+            .field("args", &self.args)
+            .field("body", &self.body)
+            .finish()
+    }
+}
+
 impl CodeNode {
-    pub fn exec(&self, parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
-        let ctx = Context::new_rc(parent);
+    pub fn new(parent: &ContextRc) -> Self {
+        CodeNode {
+            parent: parent.clone(),
+            args: Vec::new(),
+            body: Vec::new(),
+        }
+    }
+
+    pub fn exec(&self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+        let ctx = Context::new_rc(&self.parent);
         if args.len() > self.args.len() {
             return Err(CodeExecError::new(
-                &parent.borrow(),
+                &ctx.borrow(),
                 format!(
                     "Too many arguments for function: expected {}, got {}",
                     self.args.len(),
@@ -59,17 +77,32 @@ impl CodeNode {
 
 #[derive(Clone)]
 pub struct NativeNode {
-    func: fn(parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+    parent: ContextRc,
+    func: fn(args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
 }
 
 impl NativeNode {
-    fn exec(&self, parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
-        (self.func)(parent, args)
+    pub fn new(
+        parent: &ContextRc,
+        func: fn(args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+    ) -> Self {
+        NativeNode {
+            parent: parent.clone(),
+            func,
+        }
+    }
+
+    fn exec(&self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+        (self.func)(args)
     }
 
     pub fn as_vartype(
-        func: fn(parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+        parent: &ContextRc,
+        func: fn(args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
     ) -> VarType {
-        VarType::Node(Node::Native(NativeNode { func }))
+        VarType::Node(Node::Native(NativeNode {
+            parent: parent.clone(),
+            func,
+        }))
     }
 }
