@@ -6,6 +6,7 @@ use super::{
     context::{Context, ContextRc, GlobalRc},
     data::MemData,
     module_manager::{ModuleFactory, ModuleFactoryManager},
+    stack::ProgramStack,
 };
 
 pub struct DataItem {
@@ -98,6 +99,7 @@ pub struct Global {
     pub context_root: Option<ContextRc>,
     pub data: GlobalData,
     pub builtin_modules: ModuleFactoryManager,
+    pub stack: ProgramStack,
 }
 
 impl Global {
@@ -106,6 +108,7 @@ impl Global {
             context_root: None,
             data: GlobalData::new(),
             builtin_modules: ModuleFactoryManager::new(),
+            stack: ProgramStack::new(),
         }
     }
 

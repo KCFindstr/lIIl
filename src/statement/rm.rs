@@ -1,5 +1,5 @@
 use crate::{
-    data::{context::ContextRc, data::MemData, variable::VarType},
+    data::{context::ContextRc, variable::VarType},
     module::Module,
 };
 
@@ -13,20 +13,19 @@ pub struct RmStatement {
 
 impl RmStatement {
     pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
-        let mut ctx = ctx.borrow_mut();
-        let global = ctx.get_global();
+        let global = ctx.borrow_mut().get_global();
         let global = global.borrow();
         let module_path = Module::MODULE_SYMBOL_PREFIX.to_owned() + &self.abs_path;
-        if let Some(symbol) = ctx.get_symbol(&module_path) {
+        if let Some(symbol) = ctx.borrow().get_symbol(&module_path) {
             return Ok(Some(symbol.borrow().clone()));
         }
         if let Some(factory) = global.builtin_modules.get_factory(&self.abs_path) {
-            let module = (factory.factory.as_ref())();
-            ctx.set_symbol(&self.name, module.exec()?);
+            let module = (factory.factory.as_ref())(&ctx.borrow().get_root());
+            ctx.borrow_mut().set_symbol(&self.name, module.exec()?);
             Ok(None)
         } else {
             return Err(CodeExecError::new(
-                &ctx,
+                &ctx.borrow(),
                 format!("module {} not found", self.abs_path),
             ));
         }

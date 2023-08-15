@@ -2,9 +2,11 @@ use std::collections::HashMap;
 
 use crate::module::Module;
 
+use super::context::ContextRc;
+
 pub struct ModuleFactory {
     pub name: String,
-    pub factory: Box<dyn Fn() -> Module>,
+    pub factory: Box<dyn Fn(&ContextRc) -> Module>,
 }
 
 pub struct ModuleFactoryManager {
