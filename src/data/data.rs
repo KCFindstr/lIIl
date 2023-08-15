@@ -4,7 +4,7 @@ use std::{
     rc::Rc,
 };
 
-use super::{context::VarTypeRef, node::Node, variable::VarType};
+use super::{context::VarTypeRc, node::Node, variable::VarType};
 
 pub enum MemData {
     Mess(Mess),
@@ -14,7 +14,7 @@ pub enum MemData {
 
 #[derive(Debug, Clone)]
 pub struct Mess {
-    members: HashMap<String, VarTypeRef>,
+    members: HashMap<String, VarTypeRc>,
 }
 
 impl Mess {
@@ -30,7 +30,7 @@ impl Mess {
         self.members.contains_key(name)
     }
 
-    pub fn get(&self, name: &str) -> Option<VarTypeRef> {
+    pub fn get(&self, name: &str) -> Option<VarTypeRc> {
         if let Some(var) = self.members.get(name) {
             return Some(var.clone());
         } else {

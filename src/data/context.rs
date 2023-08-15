@@ -4,22 +4,22 @@ use crate::statement::CodeExecError;
 
 use super::{
     data::Mess,
-    global::{DataItemRef, Global},
+    global::{DataItemRc, Global},
     variable::VarType,
 };
 
-pub type ContextRef = Rc<RefCell<Context>>;
-pub type GlobalRef = Rc<RefCell<Global>>;
-pub type VarTypeRef = Rc<RefCell<VarType>>;
+pub type ContextRc = Rc<RefCell<Context>>;
+pub type GlobalRc = Rc<RefCell<Global>>;
+pub type VarTypeRc = Rc<RefCell<VarType>>;
 
 pub struct Context {
-    global: GlobalRef,
-    pub parent: Option<ContextRef>,
+    global: GlobalRc,
+    pub parent: Option<ContextRc>,
     pub symbols: Mess,
 }
 
 impl Context {
-    pub fn new(parent: &ContextRef) -> Self {
+    pub fn new(parent: &ContextRc) -> Self {
         let global = parent.borrow().global.clone();
         Context {
             global,
@@ -27,17 +27,17 @@ impl Context {
             symbols: Mess::new(),
         }
     }
-    pub fn new_rc(parent: &ContextRef) -> ContextRef {
+    pub fn new_rc(parent: &ContextRc) -> ContextRc {
         Rc::new(RefCell::new(Context::new(parent)))
     }
-    pub fn root(global: &GlobalRef) -> Self {
+    pub fn root(global: &GlobalRc) -> Self {
         Context {
             global: global.clone(),
             parent: None,
             symbols: Mess::new(),
         }
     }
-    pub fn root_rc() -> ContextRef {
+    pub fn root_rc() -> ContextRc {
         let global = Global::new_rc();
         let ret = Rc::new(RefCell::new(Context::root(&global)));
         global.borrow_mut().context_root = Some(ret.clone());
@@ -46,15 +46,15 @@ impl Context {
 }
 
 impl Context {
-    pub fn get_global(&self) -> GlobalRef {
+    pub fn get_global(&self) -> GlobalRc {
         self.global.clone()
     }
 
-    pub fn get_root(&self) -> ContextRef {
+    pub fn get_root(&self) -> ContextRc {
         self.get_global().borrow().context_root.to_owned().unwrap()
     }
 
-    pub fn get_mem(&mut self, name: &str) -> Option<DataItemRef> {
+    pub fn get_mem(&mut self, name: &str) -> Option<DataItemRc> {
         let item = self.get_symbol(name);
         if let Some(item) = item {
             if let VarType::Ref(var_ref) = *item.borrow() {
@@ -69,7 +69,7 @@ impl Context {
         }
     }
 
-    pub fn get_symbol(&self, name: &str) -> Option<VarTypeRef> {
+    pub fn get_symbol(&self, name: &str) -> Option<VarTypeRc> {
         if let Some(item) = self.symbols.get(name) {
             None
         } else if let Some(parent) = &self.parent {
@@ -97,11 +97,7 @@ impl Context {
         }
     }
 
-    pub fn get_symbol_or_err(
-        &self,
-        ctx: &Context,
-        name: &str,
-    ) -> Result<VarTypeRef, CodeExecError> {
+    pub fn get_symbol_or_err(&self, ctx: &Context, name: &str) -> Result<VarTypeRc, CodeExecError> {
         if let Some(item) = self.symbols.get(name) {
             Ok(item)
         } else if let Some(parent) = &self.parent {

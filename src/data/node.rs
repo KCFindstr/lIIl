@@ -3,7 +3,7 @@ use std::{cell::RefCell, fmt, ops::Deref, rc::Rc};
 use crate::statement::{CodeExecError, Statement};
 
 use super::{
-    context::{Context, ContextRef},
+    context::{Context, ContextRc},
     variable::VarType,
 };
 
@@ -14,7 +14,7 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    pub fn exec(&self, parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         match self {
             Node::Code(node) => node.exec(parent, args),
             Node::Native(node) => node.exec(parent, args),
@@ -35,7 +35,7 @@ pub struct CodeNode {
 }
 
 impl CodeNode {
-    pub fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    pub fn exec(&self, parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         let ctx = Context::new_rc(parent);
         if args.len() > self.args.len() {
             return Err(CodeExecError::new(
@@ -59,16 +59,16 @@ impl CodeNode {
 
 #[derive(Clone)]
 pub struct NativeNode {
-    func: fn(parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+    func: fn(parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
 }
 
 impl NativeNode {
-    fn exec(&self, parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    fn exec(&self, parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         (self.func)(parent, args)
     }
 
     pub fn as_vartype(
-        func: fn(parent: &ContextRef, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+        func: fn(parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
     ) -> VarType {
         VarType::Node(Node::Native(NativeNode { func }))
     }

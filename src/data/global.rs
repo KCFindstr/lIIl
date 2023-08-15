@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use crate::{module::Module, statement::CodeExecError};
 
 use super::{
-    context::{Context, ContextRef, GlobalRef},
+    context::{Context, ContextRc, GlobalRc},
     data::MemData,
     module_manager::{ModuleFactory, ModuleFactoryManager},
 };
@@ -29,10 +29,10 @@ impl DataItem {
     }
 }
 
-pub type DataItemRef = Rc<RefCell<DataItem>>;
+pub type DataItemRc = Rc<RefCell<DataItem>>;
 
 pub struct GlobalData {
-    pub variables: HashMap<i64, DataItemRef>,
+    pub variables: HashMap<i64, DataItemRc>,
     next_id: i64,
 }
 
@@ -52,18 +52,18 @@ impl GlobalData {
         return id;
     }
 
-    pub fn get(&self, id: i64) -> Option<DataItemRef> {
+    pub fn get(&self, id: i64) -> Option<DataItemRc> {
         self.variables.get(&id).and_then(|v| Some(v.clone()))
     }
 
-    pub fn get_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRef, CodeExecError> {
+    pub fn get_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRc, CodeExecError> {
         self.get(id).ok_or(CodeExecError::new(
             ctx,
             format!("Variable {} not found", id),
         ))
     }
 
-    pub fn obtain(&self, id: i64) -> Option<DataItemRef> {
+    pub fn obtain(&self, id: i64) -> Option<DataItemRc> {
         if let Some(data) = self.variables.get(&id) {
             data.borrow_mut().add_ref();
             Some(data.clone())
@@ -72,7 +72,7 @@ impl GlobalData {
         }
     }
 
-    pub fn obtain_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRef, CodeExecError> {
+    pub fn obtain_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRc, CodeExecError> {
         self.obtain(id).ok_or(CodeExecError::new(
             ctx,
             format!("Variable {} not found", id),
@@ -95,7 +95,7 @@ impl GlobalData {
 }
 
 pub struct Global {
-    pub context_root: Option<ContextRef>,
+    pub context_root: Option<ContextRc>,
     pub data: GlobalData,
     pub builtin_modules: ModuleFactoryManager,
 }
@@ -109,7 +109,7 @@ impl Global {
         }
     }
 
-    pub fn new_rc() -> GlobalRef {
+    pub fn new_rc() -> GlobalRc {
         Rc::new(RefCell::new(Global::new()))
     }
 }

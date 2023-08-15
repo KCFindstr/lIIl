@@ -2,7 +2,7 @@ use std::mem;
 
 use crate::{
     data::context::Context,
-    data::{context::ContextRef, data::Array, variable::VarType},
+    data::{context::ContextRc, data::Array, variable::VarType},
     statement::CodeExecError,
 };
 
@@ -44,7 +44,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    pub fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         match self {
             Expr::Int(expr) => expr.eval(ctx),
             Expr::String(expr) => expr.eval(ctx),
@@ -66,7 +66,7 @@ pub struct IntLiteral {
 }
 
 impl IntLiteral {
-    fn eval(&self, _: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, _: &ContextRc) -> Result<VarType, CodeExecError> {
         Ok(VarType::Int(self.value))
     }
 }
@@ -76,7 +76,7 @@ pub struct StringLiteral {
 }
 
 impl StringLiteral {
-    fn eval(&self, _: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, _: &ContextRc) -> Result<VarType, CodeExecError> {
         Ok(VarType::String(self.value.clone()))
     }
 }
@@ -86,7 +86,7 @@ pub struct FloatLiteral {
 }
 
 impl FloatLiteral {
-    fn eval(&self, _: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, _: &ContextRc) -> Result<VarType, CodeExecError> {
         Ok(VarType::Float(self.value))
     }
 }
@@ -97,7 +97,7 @@ pub struct AddExpr {
 }
 
 impl AddExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -116,7 +116,7 @@ pub struct SubExpr {
 }
 
 impl SubExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -134,7 +134,7 @@ pub struct MulExpr {
 }
 
 impl MulExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -152,7 +152,7 @@ pub struct DivExpr {
 }
 
 impl DivExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -170,7 +170,7 @@ pub struct ModExpr {
 }
 
 impl ModExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
@@ -187,7 +187,7 @@ pub struct NegExpr {
 }
 
 impl NegExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let value = self.value.eval(ctx)?;
         match value {
             VarType::Int(value) => Ok(VarType::Int(-value)),
@@ -202,7 +202,7 @@ pub struct TupleExpr {
 }
 
 impl TupleExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let mut items = Vec::new();
         for value in &self.values {
             items.push(value.eval(ctx)?);
@@ -217,7 +217,7 @@ pub struct NodeCallExpr {
 }
 
 impl NodeCallExpr {
-    fn eval(&self, ctx: &ContextRef) -> Result<VarType, CodeExecError> {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let borrowed_ctx = &*ctx.borrow();
         match &self.args {
             VarType::Tuple(args) => {

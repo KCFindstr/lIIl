@@ -1,5 +1,5 @@
 use crate::{
-    data::{context::ContextRef, data::MemData, variable::VarType},
+    data::{context::ContextRc, data::MemData, variable::VarType},
     module::Module,
 };
 
@@ -12,7 +12,7 @@ pub struct RmStatement {
 }
 
 impl RmStatement {
-    pub fn exec(&self, ctx: &ContextRef) -> Result<Option<VarType>, CodeExecError> {
+    pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
         let mut ctx = ctx.borrow_mut();
         let global = ctx.get_global();
         let global = global.borrow();

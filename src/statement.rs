@@ -1,6 +1,6 @@
 use crate::{
     data::context::Context,
-    data::{context::ContextRef, variable::VarType},
+    data::{context::ContextRc, variable::VarType},
 };
 
 use self::rm::RmStatement;
@@ -24,7 +24,7 @@ pub enum Statement {
 }
 
 impl Statement {
-    pub fn exec(&self, ctx: &ContextRef) -> Result<Option<VarType>, CodeExecError> {
+    pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
         match self {
             Statement::Rm(stmt) => stmt.exec(ctx),
         }

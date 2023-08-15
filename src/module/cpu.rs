@@ -1,7 +1,7 @@
 use crate::{
     data::node::NativeNode,
     data::{
-        context::{Context, ContextRef},
+        context::{Context, ContextRc},
         data::Mess,
         variable::VarType,
     },
@@ -18,7 +18,7 @@ impl CpuModule {
     pub fn new() -> CpuModule {
         CpuModule {
             op: NativeNode::as_vartype(
-                |_: &ContextRef, args: &Vec<VarType>| -> Result<VarType, CodeExecError> {
+                |_: &ContextRc, args: &Vec<VarType>| -> Result<VarType, CodeExecError> {
                     let joined = args
                         .iter()
                         .map(|item| format!("{}", item))
@@ -32,7 +32,7 @@ impl CpuModule {
     }
 }
 impl IModule for CpuModule {
-    fn exec(&self, _ctx: &ContextRef) -> Result<Mess, CodeExecError> {
+    fn exec(&self, _ctx: &ContextRc) -> Result<Mess, CodeExecError> {
         let mut mess = Mess::new();
         mess.set("op", self.op.clone());
         Ok(mess)

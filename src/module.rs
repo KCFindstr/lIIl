@@ -1,6 +1,6 @@
 use crate::{
     data::{
-        context::{Context, ContextRef},
+        context::{Context, ContextRc},
         data::{MemData, Mess},
         variable::VarType,
     },
@@ -33,12 +33,12 @@ impl Module {
 pub struct CodeModule {
     pub name: String,
     pub path: Vec<String>,
-    pub ctx: ContextRef,
+    pub ctx: ContextRc,
     pub stmts: Vec<Statement>,
 }
 
 impl CodeModule {
-    pub fn new(name: &str, path: &str, parent: &ContextRef) -> Self {
+    pub fn new(name: &str, path: &str, parent: &ContextRc) -> Self {
         CodeModule {
             name: name.to_string(),
             path: path.split('/').map(|s| s.to_string()).collect(),
@@ -57,18 +57,18 @@ impl CodeModule {
 }
 
 pub trait IModule {
-    fn exec(&self, ctx: &ContextRef) -> Result<Mess, CodeExecError>;
+    fn exec(&self, ctx: &ContextRc) -> Result<Mess, CodeExecError>;
 }
 
 pub struct NativeModule {
     pub name: String,
     pub path: String,
-    pub ctx: ContextRef,
+    pub ctx: ContextRc,
     module: Box<dyn IModule>,
 }
 
 impl NativeModule {
-    pub fn new(name: &str, path: &str, parent: &ContextRef, module: Box<dyn IModule>) -> Self {
+    pub fn new(name: &str, path: &str, parent: &ContextRc, module: Box<dyn IModule>) -> Self {
         NativeModule {
             name: name.to_string(),
             path: path.to_string(),
