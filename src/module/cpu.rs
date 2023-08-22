@@ -22,7 +22,7 @@ impl CpuModule {
         CpuModule {
             op: NativeNode::as_vartype(
                 parent,
-                |args: &Vec<VarType>| -> Result<VarType, CodeExecError> {
+                |_: &ContextRc, args: &Vec<VarType>| -> Result<VarType, CodeExecError> {
                     let joined = args
                         .iter()
                         .map(|item| format!("{}", item))
@@ -50,6 +50,7 @@ impl CpuModule {
         });
     }
 }
+
 impl IModule for CpuModule {
     fn exec(&self, _ctx: &ContextRc) -> Result<Mess, CodeExecError> {
         let mut mess = Mess::new();

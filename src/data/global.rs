@@ -9,6 +9,7 @@ use super::{
     stack::ProgramStack,
 };
 
+#[derive(Debug)]
 pub struct DataItem {
     pub data: MemData,
     ref_count: i64,

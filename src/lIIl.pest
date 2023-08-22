@@ -27,8 +27,6 @@ identifier = @{ XID_START ~ XID_CONTINUE* }
 
 identifier_tuple = { identifier ~ (tuple_op ~ identifier)* }
 
-symbol = @{ identifier ~ ("/" ~ identifier)* }
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Program
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,6 +35,7 @@ program = { SOI ~ stmt* ~ EOI }
 stmt = {
   ((rm_stmt | ass_stmt | expr)? ~ stmt_end)
   | node_def_stmt
+  | stmt_block
 }
 
 stmt_end = _{ "." }
@@ -54,14 +53,14 @@ rm_stmt = { rm_stmt_prefix ~ package_name }
 /// ass stmt.
 ass_stmt_prefix = _{ "make" | "mk" }
 
-ass_stmt = { ass_stmt_prefix ~ symbol ~ expr}
+ass_stmt = { ass_stmt_prefix ~ expr ~ expr}
 
 /// Node definition.
 node_def_stmt = {
-    identifier ~ "<<" ~ identifier_tuple ~ node_block
+    identifier ~ "<<" ~ identifier_tuple ~ stmt_block
 }
 
-node_block = { left_brace ~ stmt* ~ right_brace }
+stmt_block = { left_brace ~ stmt* ~ right_brace }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Expressions
@@ -71,19 +70,20 @@ expr = {
     expr_prefix? ~ expr_primary ~ (expr_infix ~ expr_prefix? ~ expr_primary)*
 }
 
-expr_infix = _{ add_op | sub_op | mul_op | div_op | mod_op | node_call_op | tuple_op }
-tuple_op = _{ "|" }
+expr_infix = _{ add_op | sub_op | mul_op | div_op | mod_op | member_op | node_call_op | tuple_op }
 add_op = _{ "+" }
 sub_op = _{ "-" }
 mul_op = _{ "*" }
 div_op = _{ "÷" }
 mod_op = _{ "%" }
+member_op = _{ "/" }
+tuple_op = _{ "|" }
 node_call_op = _{ ">>" }
 expr_prefix = _{ pos_neg_op }
 expr_primary = {
   left_paren ~ expr ~ right_paren
   | literal_expr
-  | symbol
+  | identifier
 }
 
 /// Literal expression

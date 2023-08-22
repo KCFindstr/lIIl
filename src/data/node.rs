@@ -75,17 +75,16 @@ impl CodeNode {
     }
 }
 
+pub type NativeFunc = fn(parent: &ContextRc, args: &Vec<VarType>) -> Result<VarType, CodeExecError>;
+
 #[derive(Clone)]
 pub struct NativeNode {
     parent: ContextRc,
-    func: fn(args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
+    func: NativeFunc,
 }
 
 impl NativeNode {
-    pub fn new(
-        parent: &ContextRc,
-        func: fn(args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
-    ) -> Self {
+    pub fn new(parent: &ContextRc, func: NativeFunc) -> Self {
         NativeNode {
             parent: parent.clone(),
             func,
@@ -93,13 +92,10 @@ impl NativeNode {
     }
 
     fn exec(&self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
-        (self.func)(args)
+        (self.func)(&self.parent, args)
     }
 
-    pub fn as_vartype(
-        parent: &ContextRc,
-        func: fn(args: &Vec<VarType>) -> Result<VarType, CodeExecError>,
-    ) -> VarType {
+    pub fn as_vartype(parent: &ContextRc, func: NativeFunc) -> VarType {
         VarType::Node(Node::Native(NativeNode {
             parent: parent.clone(),
             func,

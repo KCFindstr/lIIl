@@ -1,11 +1,8 @@
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    collections::HashMap,
-    rc::Rc,
-};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use super::{context::VarTypeRc, node::Node, variable::VarType};
 
+#[derive(Debug)]
 pub enum MemData {
     Mess(Mess),
     Array(Array),

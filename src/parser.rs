@@ -6,7 +6,10 @@ use pest::{
 use pest_derive::Parser;
 
 use crate::{
-    expr::{AddExpr, DivExpr, Expr, IntLiteral, ModExpr, MulExpr, NegExpr, SubExpr, TupleExpr},
+    expr::{
+        AddExpr, DivExpr, Expr, IntLiteral, MemberExpr, ModExpr, MulExpr, NegExpr, SubExpr,
+        TupleExpr,
+    },
     module::CodeModule,
 };
 
@@ -45,6 +48,7 @@ fn parse_expr(pairs: Pairs<Rule>, pratt: &PrattParser<Rule>) -> Box<Expr> {
                     }))
                 }
             }
+            Rule::member_op => Box::new(Expr::Member(MemberExpr { lhs, rhs })),
             Rule::add_op => Box::new(Expr::Add(AddExpr { lhs, rhs })),
             Rule::sub_op => Box::new(Expr::Sub(SubExpr { lhs, rhs })),
             Rule::mul_op => Box::new(Expr::Mul(MulExpr { lhs, rhs })),
@@ -69,6 +73,7 @@ pub fn parse(module: &mut CodeModule, input: &str) -> Result<(), pest::error::Er
             | Op::infix(Rule::div_op, Assoc::Left)
             | Op::infix(Rule::mod_op, Assoc::Left))
         .op(Op::prefix(Rule::pos_neg_op))
+        .op(Op::infix(Rule::member_op, Assoc::Left))
         .op(Op::infix(Rule::node_call_op, Assoc::Left));
     Ok(parse_module(module, pairs, &pratt))
 }

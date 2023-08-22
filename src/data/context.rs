@@ -58,7 +58,7 @@ impl Context {
         let item = self.get_symbol(name);
         if let Some(item) = item {
             if let VarType::Ref(var_ref) = *item.borrow() {
-                self.global.borrow_mut().data.get(var_ref)
+                self.global.borrow().data.get(var_ref)
             } else {
                 panic!("Expected reference type, got {:?}", *item)
             }

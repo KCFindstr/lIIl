@@ -2,7 +2,11 @@ use std::mem;
 
 use crate::{
     data::context::Context,
-    data::{context::ContextRc, data::Array, variable::VarType},
+    data::{
+        context::ContextRc,
+        data::{Array, MemData},
+        variable::VarType,
+    },
     statement::CodeExecError,
 };
 
@@ -40,6 +44,7 @@ pub enum Expr {
     Mod(ModExpr),
     Neg(NegExpr),
     Tuple(TupleExpr),
+    Member(MemberExpr),
     NodeCall(NodeCallExpr),
 }
 
@@ -56,6 +61,7 @@ impl Expr {
             Expr::Mod(expr) => expr.eval(ctx),
             Expr::Neg(expr) => expr.eval(ctx),
             Expr::Tuple(expr) => expr.eval(ctx),
+            Expr::Member(expr) => expr.eval(ctx),
             Expr::NodeCall(expr) => expr.eval(ctx),
         }
     }
@@ -208,6 +214,43 @@ impl TupleExpr {
             items.push(value.eval(ctx)?);
         }
         Ok(VarType::Tuple(Array { items }))
+    }
+}
+
+pub struct MemberExpr {
+    pub lhs: Box<Expr>,
+    pub rhs: Box<Expr>,
+}
+
+impl MemberExpr {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+        let vl = self.lhs.eval(ctx)?;
+        if let VarType::Ref(id) = *&vl {
+            let borrowed_ctx = &*ctx.borrow();
+            let data = borrowed_ctx
+                .get_global()
+                .borrow()
+                .data
+                .get_or_err(borrowed_ctx, id)?;
+            let borrowed_data = &*data.borrow();
+            if let MemData::Mess(mess) = &borrowed_data.data {
+                let key = self.rhs.eval(ctx)?.to_string();
+                if let Some(value) = mess.get(&key) {
+                    return Ok(value.borrow().clone());
+                }
+                return Ok(VarType::Nzero);
+            } else {
+                return Err(CodeExecError::new(
+                    borrowed_ctx,
+                    format!("Expected node, got {:?}", data),
+                ));
+            }
+        } else {
+            return Err(CodeExecError::new(
+                &ctx.borrow(),
+                format!("Expected ref, got {:?}", vl),
+            ));
+        }
     }
 }
 
