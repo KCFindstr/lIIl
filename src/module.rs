@@ -4,7 +4,7 @@ use crate::{
         data::{MemData, Mess},
         variable::VarType,
     },
-    statement::{CodeExecError, Statement},
+    statement::{CodeExecError, Statement, Statements},
 };
 pub mod cpu;
 
@@ -17,7 +17,7 @@ impl Module {
     pub const MODULE_SYMBOL_PREFIX: &'static str = "module >> ";
     pub fn exec(&self) -> Result<VarType, crate::statement::CodeExecError> {
         match self {
-            Module::Code(module) => module.exec(),
+            Module::Code(module) => Ok(module.exec()?.unwrap_or(VarType::Nzero)),
             Module::Native(module) => module.exec(),
         }
     }
@@ -34,7 +34,7 @@ pub struct CodeModule {
     pub name: String,
     pub path: Vec<String>,
     pub ctx: ContextRc,
-    pub stmts: Vec<Statement>,
+    pub stmts: Statements,
 }
 
 impl CodeModule {
@@ -43,16 +43,11 @@ impl CodeModule {
             name: name.to_string(),
             path: path.split('/').map(|s| s.to_string()).collect(),
             ctx: Context::new_rc(parent),
-            stmts: Vec::new(),
+            stmts: Statements::new(),
         }
     }
-    pub fn exec(&self) -> Result<VarType, CodeExecError> {
-        for stmt in &self.stmts {
-            if let Some(var) = stmt.exec(&self.ctx)? {
-                return Ok(var);
-            }
-        }
-        Ok(VarType::Nzero)
+    pub fn exec(&self) -> Result<Option<VarType>, CodeExecError> {
+        self.stmts.exec(&self.ctx)
     }
 }
 

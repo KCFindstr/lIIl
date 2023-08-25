@@ -28,9 +28,9 @@ identifier = @{ XID_START ~ XID_CONTINUE* }
 identifier_tuple = { identifier ~ (tuple_op ~ identifier)* }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Program
+/// Module
 ////////////////////////////////////////////////////////////////////////////////
-program = { SOI ~ stmt* ~ EOI }
+module = { SOI ~ stmt* ~ EOI }
 
 stmt = {
   ((rm_stmt | ass_stmt | expr)? ~ stmt_end)

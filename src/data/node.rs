@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fmt, ops::Deref, rc::Rc};
 
-use crate::statement::{CodeExecError, Statement};
+use crate::statement::{CodeExecError, Statement, Statements};
 
 use super::{
     context::{Context, ContextRc},
@@ -32,7 +32,7 @@ impl fmt::Debug for Node {
 pub struct CodeNode {
     parent: ContextRc,
     args: Vec<String>,
-    body: Vec<Statement>,
+    body: Statements,
 }
 
 impl fmt::Debug for CodeNode {
@@ -49,7 +49,7 @@ impl CodeNode {
         CodeNode {
             parent: parent.clone(),
             args: Vec::new(),
-            body: Vec::new(),
+            body: Statements::new(),
         }
     }
 
@@ -68,10 +68,7 @@ impl CodeNode {
         for (value, name) in args.iter().zip(&self.args) {
             ctx.borrow_mut().symbols.set(&name, value.clone());
         }
-        for stmt in &self.body {
-            stmt.exec(&ctx)?;
-        }
-        Ok(VarType::Nzero)
+        self.body.exec(&ctx).map(|v| v.unwrap_or(VarType::Nzero))
     }
 }
 
