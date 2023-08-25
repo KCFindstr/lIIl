@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::statement::CodeExecError;
+use crate::{statement::CodeExecError, utils::path::Path};
 
 use super::{
     data::Mess,
