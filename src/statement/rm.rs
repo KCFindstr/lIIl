@@ -17,7 +17,7 @@ impl RmStatement {
         let global = global.borrow();
         let module_path = Module::MODULE_SYMBOL_PREFIX.to_owned() + &self.abs_path;
         if let Some(symbol) = ctx.borrow().get_symbol(&module_path) {
-            return Ok(Some(symbol.borrow().clone()));
+            return Ok(Some(symbol));
         }
         if let Some(factory) = global.builtin_modules.get_factory(&self.abs_path) {
             let module = (factory.factory.as_ref())(&ctx.borrow().get_root());

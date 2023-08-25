@@ -236,9 +236,37 @@ impl MemberExpr {
             if let MemData::Mess(mess) = &borrowed_data.data {
                 let key = self.rhs.eval(ctx)?.to_string();
                 if let Some(value) = mess.get(&key) {
-                    return Ok(value.borrow().clone());
+                    return Ok(value.clone());
                 }
                 return Ok(VarType::Nzero);
+            } else {
+                return Err(CodeExecError::new(
+                    borrowed_ctx,
+                    format!("Expected node, got {:?}", data),
+                ));
+            }
+        } else {
+            return Err(CodeExecError::new(
+                &ctx.borrow(),
+                format!("Expected ref, got {:?}", vl),
+            ));
+        }
+    }
+
+    pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
+        let vl = self.lhs.eval(ctx)?;
+        if let VarType::Ref(id) = *&vl {
+            let borrowed_ctx = &*ctx.borrow();
+            let data = borrowed_ctx
+                .get_global()
+                .borrow()
+                .data
+                .get_or_err(borrowed_ctx, id)?;
+            let borrowed_data = &mut *data.borrow_mut();
+            if let MemData::Mess(mess) = &mut borrowed_data.data {
+                let key = self.rhs.eval(ctx)?.to_string();
+                mess.set(&key, val);
+                return Ok(());
             } else {
                 return Err(CodeExecError::new(
                     borrowed_ctx,
@@ -267,10 +295,9 @@ impl NodeCallExpr {
                 let node_name = self.node_name.eval(ctx)?;
                 match node_name {
                     VarType::String(node_name) => {
-                        let var = (*borrowed_ctx
+                        let var = borrowed_ctx
                             .get_symbol_or_err(borrowed_ctx, &node_name)?
-                            .borrow())
-                        .clone();
+                            .clone();
                         if let VarType::Node(node) = var {
                             let result = node.exec(&args.items)?;
                             Ok(result)

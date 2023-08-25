@@ -53,7 +53,9 @@ rm_stmt = { rm_stmt_prefix ~ package_name }
 /// ass stmt.
 ass_stmt_prefix = _{ "make" | "mk" }
 
-ass_stmt = { ass_stmt_prefix ~ expr ~ expr}
+ass_stmt = { ass_stmt_prefix ~ lvalue ~ expr}
+
+lvalue = { identifier | expr }
 
 /// Node definition.
 node_def_stmt = {

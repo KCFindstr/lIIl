@@ -10,7 +10,6 @@ use super::{
 
 pub type ContextRc = Rc<RefCell<Context>>;
 pub type GlobalRc = Rc<RefCell<Global>>;
-pub type VarTypeRc = Rc<RefCell<VarType>>;
 
 pub struct Context {
     global: GlobalRc,
@@ -57,10 +56,10 @@ impl Context {
     pub fn get_mem(&mut self, name: &str) -> Option<DataItemRc> {
         let item = self.get_symbol(name);
         if let Some(item) = item {
-            if let VarType::Ref(var_ref) = *item.borrow() {
+            if let VarType::Ref(var_ref) = item {
                 self.global.borrow().data.get(var_ref)
             } else {
-                panic!("Expected reference type, got {:?}", *item)
+                panic!("Expected reference type, got {:?}", item)
             }
         } else if let Some(parent) = &self.parent {
             parent.borrow_mut().get_mem(name)
@@ -69,7 +68,7 @@ impl Context {
         }
     }
 
-    pub fn get_symbol(&self, name: &str) -> Option<VarTypeRc> {
+    pub fn get_symbol(&self, name: &str) -> Option<VarType> {
         if let Some(item) = self.symbols.get(name) {
             None
         } else if let Some(parent) = &self.parent {
@@ -97,7 +96,7 @@ impl Context {
         }
     }
 
-    pub fn get_symbol_or_err(&self, ctx: &Context, name: &str) -> Result<VarTypeRc, CodeExecError> {
+    pub fn get_symbol_or_err(&self, ctx: &Context, name: &str) -> Result<VarType, CodeExecError> {
         if let Some(item) = self.symbols.get(name) {
             Ok(item)
         } else if let Some(parent) = &self.parent {
