@@ -1,3 +1,4 @@
+#[derive(Clone, Debug)]
 pub struct Path {
     pub path: Vec<String>,
 }
@@ -56,5 +57,19 @@ impl Path {
             path.push(self.path[j].clone());
         }
         Path { path }
+    }
+
+    pub fn as_std_path(&self) -> std::path::PathBuf {
+        let mut path = std::path::PathBuf::new();
+        for p in &self.path {
+            path.push(p);
+        }
+        path
+    }
+}
+
+impl ToString for Path {
+    fn to_string(&self) -> String {
+        self.path.join("/")
     }
 }

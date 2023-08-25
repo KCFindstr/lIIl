@@ -66,7 +66,7 @@ impl CodeNode {
             ));
         }
         for (value, name) in args.iter().zip(&self.args) {
-            ctx.borrow_mut().symbols.set(&name, value.clone());
+            ctx.borrow_mut().set_symbol(&name, value.clone());
         }
         self.body.exec(&ctx).map(|v| v.unwrap_or(VarType::Nzero))
     }

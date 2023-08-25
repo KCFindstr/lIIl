@@ -36,13 +36,12 @@ impl CpuModule {
     }
 
     pub fn register(manager: &mut ModuleFactoryManager) {
-        let abs_path: String = Module::MODULE_SYMBOL_PREFIX.to_owned() + CpuModule::NAME;
         manager.add_factory(ModuleFactory {
-            abs_path: abs_path.to_string(),
+            name: CpuModule::NAME.to_string(),
             factory: Box::new(move |parent: &ContextRc| -> Module {
                 Module::Native(NativeModule::new(
                     CpuModule::NAME,
-                    abs_path.as_str(),
+                    CpuModule::NAME,
                     parent,
                     Box::new(CpuModule::new(parent)),
                 ))

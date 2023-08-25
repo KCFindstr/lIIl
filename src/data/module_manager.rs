@@ -8,8 +8,14 @@ use crate::module::{
 use super::context::ContextRc;
 
 pub struct ModuleFactory {
-    pub abs_path: String,
+    pub name: String,
     pub factory: Box<dyn Fn(&ContextRc) -> Module>,
+}
+
+impl ModuleFactory {
+    pub fn create(&self, parent: &ContextRc) -> Module {
+        (self.factory)(parent)
+    }
 }
 
 pub struct ModuleFactoryManager {
@@ -24,15 +30,15 @@ impl ModuleFactoryManager {
     }
 
     pub fn add_factory(&mut self, factory: ModuleFactory) {
-        self.factories.insert(factory.abs_path.clone(), factory);
+        self.factories.insert(factory.name.clone(), factory);
     }
 
-    pub fn get_factory(&self, abs_path: &str) -> Option<&ModuleFactory> {
-        self.factories.get(abs_path)
+    pub fn get_factory(&self, name: &str) -> Option<&ModuleFactory> {
+        self.factories.get(name)
     }
 
-    pub fn has_factory(&self, abs_path: &str) -> bool {
-        self.factories.contains_key(abs_path)
+    pub fn has_factory(&self, name: &str) -> bool {
+        self.factories.contains_key(name)
     }
 }
 

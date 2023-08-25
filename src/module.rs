@@ -15,10 +15,20 @@ pub enum Module {
 }
 
 impl Module {
-    pub const MODULE_SYMBOL_PREFIX: &'static str = "module >> ";
+    const BUILTIN_MODULE_PREFIX: &'static str = "<module>";
+    const LIIL_EXT: &'static str = ".lIIl";
+
+    pub fn builtin_path(name: &str) -> String {
+        return Module::BUILTIN_MODULE_PREFIX.to_owned() + "/" + name;
+    }
+
+    pub fn code_path(path_wo_ext: &str) -> String {
+        return path_wo_ext.to_owned() + Module::LIIL_EXT;
+    }
+
     pub fn exec(&self) -> Result<VarType, crate::statement::CodeExecError> {
         match self {
-            Module::Code(module) => Ok(module.exec()?.unwrap_or(VarType::Nzero)),
+            Module::Code(module) => module.exec(),
             Module::Native(module) => module.exec(),
         }
     }
@@ -47,8 +57,9 @@ impl CodeModule {
             stmts: Statements::new(),
         }
     }
-    pub fn exec(&self) -> Result<Option<VarType>, CodeExecError> {
-        self.stmts.exec(&self.ctx)
+    pub fn exec(&self) -> Result<VarType, CodeExecError> {
+        self.stmts.exec(&self.ctx)?;
+        return Ok(VarType::Ref(self.ctx.borrow().get_symbol_mess_id()));
     }
 }
 
