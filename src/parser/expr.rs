@@ -1,14 +1,14 @@
 use once_cell::sync::Lazy;
 use pest::{
-    iterators::{Pair, Pairs},
+    iterators::Pairs,
     pratt_parser::{Assoc, Op, PrattParser},
 };
 
 use crate::{
     data::lvalue::LValue,
     expr::{
-        AddExpr, DivExpr, Expr, IntLiteral, MemberExpr, ModExpr, MulExpr, NegExpr, SubExpr,
-        TupleExpr,
+        AddExpr, DivExpr, Expr, IntLiteral, MemberExpr, ModExpr, MulExpr, NegExpr, NodeCallExpr,
+        SubExpr, TupleExpr,
     },
     statement::CodeExecError,
 };
@@ -69,20 +69,6 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
             _ => unreachable!(),
         })
         .map_infix(|mut lhs, op, rhs| match op.as_rule() {
-            Rule::tuple_op => {
-                if let Expr::Tuple(tuple) = &mut lhs {
-                    tuple.values.push(rhs);
-                    lhs
-                } else {
-                    Expr::Tuple(TupleExpr {
-                        values: vec![lhs, rhs],
-                    })
-                }
-            }
-            Rule::member_op => Expr::Member(MemberExpr {
-                lhs: Box::new(lhs),
-                rhs: Box::new(rhs),
-            }),
             Rule::add_op => Expr::Add(AddExpr {
                 lhs: Box::new(lhs),
                 rhs: Box::new(rhs),
@@ -103,6 +89,24 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
                 lhs: Box::new(lhs),
                 rhs: Box::new(rhs),
             }),
+            Rule::member_op => Expr::Member(MemberExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
+            Rule::node_call_op => Expr::NodeCall(NodeCallExpr {
+                node_name: Box::new(rhs),
+                args: Box::new(lhs),
+            }),
+            Rule::tuple_op => {
+                if let Expr::Tuple(tuple) = &mut lhs {
+                    tuple.values.push(rhs);
+                    lhs
+                } else {
+                    Expr::Tuple(TupleExpr {
+                        values: vec![lhs, rhs],
+                    })
+                }
+            }
             _ => unreachable!(),
         })
         .parse(pairs)

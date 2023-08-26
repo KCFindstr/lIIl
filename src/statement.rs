@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{
     data::context::Context,
     data::{context::ContextRc, variable::VarType},
@@ -10,9 +12,14 @@ pub mod ass;
 pub mod node_def;
 pub mod rm;
 
-#[derive(Debug)]
 pub struct CodeExecError {
     desc: String,
+}
+
+impl Debug for CodeExecError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&format!("CodeExecError: {}", self.desc))
+    }
 }
 
 impl CodeExecError {

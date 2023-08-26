@@ -4,10 +4,7 @@ use pest::Parser;
 use pest_derive::Parser;
 
 use crate::{
-    data::{
-        context::{Context, ContextRc},
-        global::Global,
-    },
+    data::context::{Context, ContextRc},
     module::CodeModule,
     parser::module::parse_module,
     statement::CodeExecError,

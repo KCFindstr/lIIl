@@ -33,7 +33,7 @@ impl RmStatement {
         if let Some(factory) = global.borrow().builtin_modules.get_factory(&self.path) {
             let mut module = factory.create(&ctx.borrow().get_root());
             let module_ret = module.exec()?;
-            ctx.borrow_mut().set_symbol(&self.path, module_ret);
+            ctx.borrow_mut().set_symbol(&self.path, module_ret)?;
             return Ok(None);
         }
 
@@ -45,7 +45,7 @@ impl RmStatement {
         if !module_path.is_file() {
             return Err(CodeExecError::new(
                 &ctx.borrow(),
-                format!("module {} not found", self.path),
+                format!("Module {} not found", self.path),
             ));
         }
         let mut module = parse_file(
@@ -53,7 +53,7 @@ impl RmStatement {
             Some(&ctx.borrow().get_root()),
         )?;
         let module_ret = module.exec()?;
-        ctx.borrow_mut().set_symbol(&self.path, module_ret);
+        ctx.borrow_mut().set_symbol(&self.path, module_ret)?;
         module.exec()?;
         Ok(None)
     }

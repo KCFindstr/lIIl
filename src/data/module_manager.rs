@@ -33,10 +33,6 @@ impl ModuleFactoryManager {
     pub fn get_factory(&self, name: &str) -> Option<&ModuleFactory> {
         self.factories.get(name)
     }
-
-    pub fn has_factory(&self, name: &str) -> bool {
-        self.factories.contains_key(name)
-    }
 }
 
 pub fn register_builtin_modules(manager: &mut ModuleFactoryManager) {

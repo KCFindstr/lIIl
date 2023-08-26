@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::collections::HashMap;
 
 use crate::statement::CodeExecError;
 
@@ -32,32 +32,31 @@ impl MemData {
         }
     }
 
-    pub fn get(&self, ctx: &Context, key: &str) -> Result<VarType, CodeExecError> {
+    pub fn get(&self, key: &str) -> VarType {
         match self {
             MemData::Mess(mess) => {
                 if let Some(var) = mess.get(key) {
-                    Ok(var)
+                    var
                 } else {
-                    Err(CodeExecError::new(
-                        ctx,
-                        format!("Cannot get key {} on mess.", key),
-                    ))
+                    VarType::Nzero
                 }
             }
             MemData::Array(array) => {
                 if let Some(var) = array.get(key) {
-                    Ok(var)
+                    var
                 } else {
-                    Err(CodeExecError::new(
-                        ctx,
-                        format!("Cannot get key {} on array.", key),
-                    ))
+                    VarType::Nzero
                 }
             }
-            MemData::Node(_node) => Err(CodeExecError::new(
-                ctx,
-                format!("Cannot get key {} on node.", key),
-            )),
+            MemData::Node(_node) => VarType::Nzero,
+        }
+    }
+
+    pub fn has(&self, key: &str) -> bool {
+        match self {
+            MemData::Mess(mess) => mess.has(key),
+            MemData::Array(array) => array.has(key),
+            MemData::Node(_node) => false,
         }
     }
 }
@@ -73,9 +72,7 @@ impl Mess {
             members: HashMap::new(),
         }
     }
-}
 
-impl Mess {
     pub fn has(&self, name: &str) -> bool {
         self.members.contains_key(name)
     }

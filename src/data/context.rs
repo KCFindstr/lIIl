@@ -1,9 +1,9 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{statement::CodeExecError, utils::path::Path};
+use crate::statement::CodeExecError;
 
 use super::{
-    data::{self, MemData, Mess},
+    data::{MemData, Mess},
     global::{DataItemRc, Global},
     variable::VarType,
 };
@@ -63,7 +63,7 @@ impl Context {
         let item = self.get_symbol(name);
         if let Some(item) = item {
             if let VarType::Ref(var_ref) = item {
-                self.global.borrow().data.get(var_ref)
+                self.get_mem_by_ref(var_ref)
             } else {
                 panic!("Expected reference type, got {:?}", item)
             }
@@ -74,20 +74,24 @@ impl Context {
         }
     }
 
+    pub fn get_mem_by_ref(&self, ref_id: i64) -> Option<DataItemRc> {
+        self.global.borrow().data.get(ref_id)
+    }
+
     pub fn add_mem(&self, data: MemData) -> VarType {
         VarType::Ref(self.get_global().borrow_mut().data.add(data))
     }
 
     pub fn get_symbol(&self, name: &str) -> Option<VarType> {
         let data_item = self.get_data_item();
-        if let MemData::Mess(mess) = &data_item.borrow().data {
-            if let Some(item) = mess.get(name) {
-                return Some(item);
-            } else if let Some(parent) = &self.parent {
-                return parent.borrow().get_symbol(name);
-            }
+        if data_item.borrow().data.has(&name) {
+            return Some(data_item.borrow().data.get(&name));
         }
-        None
+        if let Some(parent) = &self.parent {
+            parent.borrow().get_symbol(name)
+        } else {
+            None
+        }
     }
 
     pub fn get_symbol_mess_id(&self) -> i64 {
@@ -96,25 +100,28 @@ impl Context {
 
     pub fn has_symbol(&self, name: &str) -> bool {
         let data_item = self.get_data_item();
-        if let MemData::Mess(mess) = &data_item.borrow().data {
-            if mess.has(name) {
-                return true;
-            } else if let Some(parent) = &self.parent {
-                return parent.borrow().has_symbol(name);
-            }
+        if data_item.borrow().data.has(&name) {
+            return true;
         }
-        false
+        if let Some(parent) = &self.parent {
+            parent.borrow().has_symbol(name)
+        } else {
+            false
+        }
     }
 
-    pub fn set_symbol(&self, name: &str, value: VarType) {
+    pub fn set_symbol(&self, name: &str, value: VarType) -> Result<(), CodeExecError> {
         let data_item = self.get_data_item();
-        let mut borrowed_data_item = data_item.borrow_mut();
-        if let MemData::Mess(mess) = &mut borrowed_data_item.data {
-            if mess.has(name) {
-                mess.set(name, value);
-            } else if let Some(parent) = &self.parent {
-                parent.borrow_mut().set_symbol(name, value);
-            }
+        if data_item.borrow().data.has(&name) {
+            return data_item.borrow_mut().data.set(&self, &name, value);
+        }
+        if let Some(parent) = &self.parent {
+            parent.borrow().set_symbol(name, value)
+        } else {
+            Err(CodeExecError::new(
+                &self,
+                format!("Symbol {} not found.", name.to_string()),
+            ))
         }
     }
 
@@ -124,7 +131,7 @@ impl Context {
         } else {
             Err(CodeExecError::new(
                 &self,
-                format!("{} is not found.", name.to_string()),
+                format!("Symbol {} not found.", name.to_string()),
             ))
         }
     }

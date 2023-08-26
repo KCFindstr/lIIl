@@ -17,5 +17,8 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let module = parser::parse_file(&args.source_file, None).unwrap();
+    let mut module = parser::parse_file(&args.source_file, None).unwrap();
+    if let Err(e) = module.exec() {
+        println!("Error: {:?}", e);
+    }
 }

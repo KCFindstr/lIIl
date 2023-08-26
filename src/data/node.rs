@@ -1,6 +1,6 @@
-use std::{cell::RefCell, fmt, ops::Deref, rc::Rc};
+use std::fmt;
 
-use crate::statement::{CodeExecError, Statement, Statements};
+use crate::statement::{CodeExecError, Statements};
 
 use super::{
     context::{Context, ContextRc},
@@ -65,7 +65,7 @@ impl CodeNode {
             ));
         }
         for (value, name) in args.iter().zip(&self.args) {
-            ctx.borrow_mut().set_symbol(&name, value.clone());
+            ctx.borrow_mut().set_symbol(&name, value.clone())?;
         }
         self.body.exec(&ctx).map(|v| v.unwrap_or(VarType::Nzero))
     }
@@ -92,10 +92,7 @@ impl NativeNode {
     }
 
     pub fn as_vartype(parent: &ContextRc, func: NativeFunc) -> VarType {
-        let node = MemData::Node(Node::Native(NativeNode {
-            parent: parent.clone(),
-            func,
-        }));
+        let node = MemData::Node(Node::Native(NativeNode::new(parent, func)));
         parent.borrow().add_mem(node)
     }
 }

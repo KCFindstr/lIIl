@@ -4,7 +4,7 @@ use crate::{
         data::{MemData, Mess},
         variable::VarType,
     },
-    statement::{CodeExecError, Statement, Statements},
+    statement::{CodeExecError, Statements},
     utils::path::Path,
 };
 pub mod cpu;

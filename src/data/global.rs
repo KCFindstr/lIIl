@@ -1,33 +1,22 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use crate::{module::Module, statement::CodeExecError};
+use crate::statement::CodeExecError;
 
 use super::{
     context::{Context, ContextRc, GlobalRc},
     data::MemData,
-    module_manager::{ModuleFactory, ModuleFactoryManager},
+    module_manager::{register_builtin_modules, ModuleFactoryManager},
     stack::ProgramStack,
 };
 
 #[derive(Debug)]
 pub struct DataItem {
     pub data: MemData,
-    ref_count: i64,
 }
 
 impl DataItem {
     pub fn new(data: MemData) -> DataItem {
-        DataItem { data, ref_count: 0 }
-    }
-
-    pub fn add_ref(&mut self) {
-        self.ref_count += 1;
-    }
-
-    // Returns whether ref count is zero.
-    pub fn deref(&mut self) -> bool {
-        self.ref_count -= 1;
-        self.ref_count <= 0
+        DataItem { data }
     }
 }
 
@@ -48,8 +37,7 @@ impl GlobalData {
 
     pub fn add(&mut self, data: MemData) -> i64 {
         let id = self.next_id();
-        let mut item = DataItem::new(data);
-        item.add_ref();
+        let item = DataItem::new(data);
         self.variables.insert(id, Rc::new(RefCell::new(item)));
         return id;
     }
@@ -59,34 +47,8 @@ impl GlobalData {
     }
 
     pub fn get_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRc, CodeExecError> {
-        self.get(id).ok_or(CodeExecError::new(
-            ctx,
-            format!("Variable {} not found", id),
-        ))
-    }
-
-    pub fn obtain(&self, id: i64) -> Option<DataItemRc> {
-        if let Some(data) = self.variables.get(&id) {
-            data.borrow_mut().add_ref();
-            Some(data.clone())
-        } else {
-            None
-        }
-    }
-
-    pub fn obtain_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRc, CodeExecError> {
-        self.obtain(id).ok_or(CodeExecError::new(
-            ctx,
-            format!("Variable {} not found", id),
-        ))
-    }
-
-    pub fn release(&mut self, id: i64) {
-        if let Some(data) = self.variables.get(&id) {
-            if data.borrow_mut().deref() {
-                self.variables.remove(&id);
-            }
-        }
+        self.get(id)
+            .ok_or(CodeExecError::new(ctx, format!("Symbol {} not found", id)))
     }
 
     fn next_id(&mut self) -> i64 {
@@ -105,10 +67,12 @@ pub struct Global {
 
 impl Global {
     pub fn new() -> Self {
+        let mut builtin_modules = ModuleFactoryManager::new();
+        register_builtin_modules(&mut builtin_modules);
         Global {
             context_root: None,
             data: GlobalData::new(),
-            builtin_modules: ModuleFactoryManager::new(),
+            builtin_modules,
             stack: ProgramStack::new(),
         }
     }

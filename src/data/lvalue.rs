@@ -21,7 +21,7 @@ impl Debug for LValue {
 impl LValue {
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
         match self {
-            LValue::Identifier(id) => Ok(ctx.borrow_mut().set_symbol(&id, val)),
+            LValue::Identifier(id) => ctx.borrow().set_symbol(&id, val),
             LValue::MemberExpr(expr) => expr.set(ctx, val),
         }
     }

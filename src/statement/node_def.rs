@@ -21,7 +21,7 @@ impl NodeDefStatement {
         code_node.body.stmts.append(&mut self.body.stmts);
         let node = Node::Code(code_node);
         let var = ctx.borrow().add_mem(MemData::Node(node));
-        ctx.borrow().set_symbol(&self.name, var);
+        ctx.borrow().set_symbol(&self.name, var)?;
         Ok(None)
     }
 }

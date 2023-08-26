@@ -1,7 +1,6 @@
 use pest::iterators::Pairs;
 
 use crate::{
-    data::lvalue,
     module::CodeModule,
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
