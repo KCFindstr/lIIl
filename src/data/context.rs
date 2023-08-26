@@ -74,6 +74,10 @@ impl Context {
         }
     }
 
+    pub fn add_mem(&self, data: MemData) -> VarType {
+        VarType::Ref(self.get_global().borrow_mut().data.add(data))
+    }
+
     pub fn get_symbol(&self, name: &str) -> Option<VarType> {
         let data_item = self.get_data_item();
         if let MemData::Mess(mess) = &data_item.borrow().data {

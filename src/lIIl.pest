@@ -25,7 +25,7 @@ escape = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" | NEWLINE) }
 
 identifier = @{ XID_START ~ XID_CONTINUE* }
 
-identifier_tuple = { identifier ~ (tuple_op ~ identifier)* }
+identifier_tuple = { (identifier ~ (tuple_op ~ identifier)*) }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Module

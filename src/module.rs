@@ -26,7 +26,7 @@ impl Module {
         return path_wo_ext.to_owned() + Module::LIIL_EXT;
     }
 
-    pub fn exec(&self) -> Result<VarType, crate::statement::CodeExecError> {
+    pub fn exec(&mut self) -> Result<VarType, crate::statement::CodeExecError> {
         match self {
             Module::Code(module) => module.exec(),
             Module::Native(module) => module.exec(),
@@ -57,7 +57,7 @@ impl CodeModule {
             stmts: Statements::new(),
         }
     }
-    pub fn exec(&self) -> Result<VarType, CodeExecError> {
+    pub fn exec(&mut self) -> Result<VarType, CodeExecError> {
         self.stmts.exec(&self.ctx)?;
         return Ok(VarType::Ref(self.ctx.borrow().get_symbol_mess_id()));
     }
@@ -85,9 +85,6 @@ impl NativeModule {
     }
     pub fn exec(&self) -> Result<VarType, CodeExecError> {
         let mess = self.module.exec(&self.ctx)?;
-        let global = self.ctx.borrow().get_global();
-        let mut global = global.borrow_mut();
-        let id = global.data.add(MemData::Mess(mess));
-        return Ok(VarType::Ref(id));
+        return Ok(self.ctx.borrow().add_mem(MemData::Mess(mess)));
     }
 }

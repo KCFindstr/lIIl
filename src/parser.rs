@@ -14,6 +14,7 @@ use crate::{
 };
 
 pub mod expr;
+pub mod literal;
 pub mod module;
 pub mod stmt;
 

@@ -314,7 +314,7 @@ impl NodeCallExpr {
             VarType::Tuple(args) => match node_name {
                 VarType::String(node_name) => {
                     if let Some(mem) = ctx.borrow().get_mem(&node_name) {
-                        if let MemData::Node(node) = &mem.borrow().data {
+                        if let MemData::Node(node) = &mut mem.borrow_mut().data {
                             return node.exec(&args.items);
                         } else {
                             return Err(CodeExecError::new(

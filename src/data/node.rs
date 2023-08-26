@@ -14,7 +14,7 @@ pub enum Node {
 }
 
 impl Node {
-    pub fn exec(&self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    pub fn exec(&mut self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         match self {
             Node::Code(node) => node.exec(args),
             Node::Native(node) => node.exec(args),
@@ -30,8 +30,8 @@ impl fmt::Debug for Node {
 
 pub struct CodeNode {
     parent: ContextRc,
-    args: Vec<String>,
-    body: Statements,
+    pub args: Vec<String>,
+    pub body: Statements,
 }
 
 impl fmt::Debug for CodeNode {
@@ -52,7 +52,7 @@ impl CodeNode {
         }
     }
 
-    pub fn exec(&self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+    pub fn exec(&mut self, args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
         let ctx = Context::new_rc(&self.parent);
         if args.len() > self.args.len() {
             return Err(CodeExecError::new(
@@ -96,6 +96,6 @@ impl NativeNode {
             parent: parent.clone(),
             func,
         }));
-        VarType::Ref(parent.borrow().get_global().borrow_mut().data.add(node))
+        parent.borrow().add_mem(node)
     }
 }

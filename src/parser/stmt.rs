@@ -3,9 +3,10 @@ use pest::iterators::Pairs;
 use crate::{
     data::lvalue,
     module::CodeModule,
-    parser::expr::parse_lvalue,
+    parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
-        ass::AssStatement, rm::RmStatement, CodeExecError, ExprStatement, Statement, Statements,
+        ass::AssStatement, node_def::NodeDefStatement, rm::RmStatement, CodeExecError,
+        ExprStatement, Statement, Statements,
     },
 };
 
@@ -55,6 +56,28 @@ fn parse_ass(pairs: Pairs<Rule>) -> Result<AssStatement, CodeExecError> {
     })
 }
 
+fn parse_node_def(
+    module: &mut CodeModule,
+    pairs: Pairs<Rule>,
+) -> Result<NodeDefStatement, CodeExecError> {
+    let mut name = None;
+    let mut args = None;
+    let mut body = None;
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::identifier => name = Some(pair.as_str().to_owned()),
+            Rule::identifier_tuple => args = Some(parse_identifier_tuple(pair.into_inner())?),
+            Rule::stmt_block => body = Some(parse_stmt_block(module, pair.into_inner())?),
+            _ => unreachable!(),
+        }
+    }
+    Ok(NodeDefStatement {
+        name: name.unwrap(),
+        args: args.unwrap(),
+        body: body.unwrap(),
+    })
+}
+
 pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Statement, CodeExecError> {
     for pair in pairs {
         match pair.as_rule() {
@@ -65,6 +88,12 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
                 return Ok(Statement::Expr(ExprStatement {
                     expr: parse_expr(pair.into_inner()),
                 }))
+            }
+            Rule::node_def_stmt => {
+                return Ok(Statement::NodeDef(parse_node_def(
+                    module,
+                    pair.into_inner(),
+                )?))
             }
             Rule::stmt_block => {
                 return Ok(Statement::Stmts(parse_stmt_block(

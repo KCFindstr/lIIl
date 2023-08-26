@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use crate::module::{
-    cpu::{self, CpuModule},
-    Module,
-};
+use crate::module::{cpu::CpuModule, Module};
 
 use super::context::ContextRc;
 
