@@ -1,3 +1,5 @@
+use std::fmt::{self, Debug};
+
 use crate::{expr::MemberExpr, statement::CodeExecError};
 
 use super::{context::ContextRc, variable::VarType};
@@ -7,8 +9,17 @@ pub enum LValue {
     MemberExpr(MemberExpr),
 }
 
+impl Debug for LValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LValue::Identifier(id) => write!(f, "{}", id),
+            LValue::MemberExpr(_expr) => write!(f, "MemberExpr"),
+        }
+    }
+}
+
 impl LValue {
-    pub fn set(&mut self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
+    pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
         match self {
             LValue::Identifier(id) => Ok(ctx.borrow_mut().set_symbol(&id, val)),
             LValue::MemberExpr(expr) => expr.set(ctx, val),

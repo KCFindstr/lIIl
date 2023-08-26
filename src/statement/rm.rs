@@ -48,7 +48,10 @@ impl RmStatement {
                 format!("module {} not found", self.path),
             ));
         }
-        let module = parse_file(module_path.to_str().unwrap())?;
+        let module = parse_file(
+            module_path.to_str().unwrap(),
+            Some(&ctx.borrow().get_root()),
+        )?;
         let module_ret = module.exec()?;
         ctx.borrow_mut().set_symbol(&self.path, module_ret);
         module.exec()?;

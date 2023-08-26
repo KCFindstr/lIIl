@@ -4,7 +4,12 @@ use pest::Parser;
 use pest_derive::Parser;
 
 use crate::{
-    data::context::Context, module::CodeModule, parser::module::parse_module,
+    data::{
+        context::{Context, ContextRc},
+        global::Global,
+    },
+    module::CodeModule,
+    parser::module::parse_module,
     statement::CodeExecError,
 };
 
@@ -24,10 +29,14 @@ pub fn parse(module: &mut CodeModule, input: &str) -> Result<(), CodeExecError> 
     parse_module(module, pairs)
 }
 
-pub fn parse_file(file: &str) -> Result<CodeModule, CodeExecError> {
+pub fn parse_file(file: &str, root_ctx: Option<&ContextRc>) -> Result<CodeModule, CodeExecError> {
     let abs_file_path = fs::canonicalize(file).unwrap();
     let abs_file = abs_file_path.to_str().unwrap();
-    let context = Context::root_rc();
+    let context = if let Some(root) = root_ctx {
+        Context::new_rc(root)
+    } else {
+        Context::root_rc()
+    };
     let input = std::fs::read_to_string(file)
         .map_err(|e| CodeExecError::new_str(format!("IO error: {:?}", e)))?;
     let mut module = CodeModule::new("lIIl", abs_file, &context);

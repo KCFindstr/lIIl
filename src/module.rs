@@ -85,8 +85,7 @@ impl NativeModule {
     }
     pub fn exec(&self) -> Result<VarType, CodeExecError> {
         let mess = self.module.exec(&self.ctx)?;
-        let ctx = self.ctx.borrow();
-        let global = ctx.get_global();
+        let global = self.ctx.borrow().get_global();
         let mut global = global.borrow_mut();
         let id = global.data.add(MemData::Mess(mess));
         return Ok(VarType::Ref(id));

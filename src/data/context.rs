@@ -59,7 +59,7 @@ impl Context {
         self.get_global().borrow().context_root.to_owned().unwrap()
     }
 
-    pub fn get_mem(&mut self, name: &str) -> Option<DataItemRc> {
+    pub fn get_mem(&self, name: &str) -> Option<DataItemRc> {
         let item = self.get_symbol(name);
         if let Some(item) = item {
             if let VarType::Ref(var_ref) = item {
@@ -76,8 +76,7 @@ impl Context {
 
     pub fn get_symbol(&self, name: &str) -> Option<VarType> {
         let data_item = self.get_data_item();
-        let borrowed_data_item = data_item.borrow();
-        if let MemData::Mess(mess) = &borrowed_data_item.data {
+        if let MemData::Mess(mess) = &data_item.borrow().data {
             if let Some(item) = mess.get(name) {
                 return Some(item);
             } else if let Some(parent) = &self.parent {
@@ -93,8 +92,7 @@ impl Context {
 
     pub fn has_symbol(&self, name: &str) -> bool {
         let data_item = self.get_data_item();
-        let borrowed_data_item = data_item.borrow();
-        if let MemData::Mess(mess) = &borrowed_data_item.data {
+        if let MemData::Mess(mess) = &data_item.borrow().data {
             if mess.has(name) {
                 return true;
             } else if let Some(parent) = &self.parent {
@@ -104,7 +102,7 @@ impl Context {
         false
     }
 
-    pub fn set_symbol(&mut self, name: &str, value: VarType) {
+    pub fn set_symbol(&self, name: &str, value: VarType) {
         let data_item = self.get_data_item();
         let mut borrowed_data_item = data_item.borrow_mut();
         if let MemData::Mess(mess) = &mut borrowed_data_item.data {
@@ -116,12 +114,12 @@ impl Context {
         }
     }
 
-    pub fn get_symbol_or_err(&self, ctx: &Context, name: &str) -> Result<VarType, CodeExecError> {
+    pub fn get_symbol_or_err(&self, name: &str) -> Result<VarType, CodeExecError> {
         if let Some(item) = self.get_symbol(name) {
             Ok(item)
         } else {
             Err(CodeExecError::new(
-                ctx,
+                &self,
                 format!("{} is not found.", name.to_string()),
             ))
         }

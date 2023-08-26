@@ -1,10 +1,11 @@
-use std::mem;
+use std::{fmt::Debug, mem};
 
 use crate::{
     data::context::Context,
     data::{
         context::ContextRc,
         data::{Array, MemData},
+        node,
         variable::VarType,
     },
     statement::CodeExecError,
@@ -46,6 +47,25 @@ pub enum Expr {
     Tuple(TupleExpr),
     Member(MemberExpr),
     NodeCall(NodeCallExpr),
+}
+
+impl Debug for Expr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Expr::Int(expr) => write!(f, "IntExpr"),
+            Expr::String(expr) => write!(f, "StringExpr"),
+            Expr::Float(expr) => write!(f, "FloatExpr"),
+            Expr::Add(expr) => write!(f, "AddExpr"),
+            Expr::Sub(expr) => write!(f, "SubExpr"),
+            Expr::Mul(expr) => write!(f, "MulExpr"),
+            Expr::Div(expr) => write!(f, "DivExpr"),
+            Expr::Mod(expr) => write!(f, "ModExpr"),
+            Expr::Neg(expr) => write!(f, "NegExpr"),
+            Expr::Tuple(expr) => write!(f, "TupleExpr"),
+            Expr::Member(expr) => write!(f, "MemberExpr"),
+            Expr::NodeCall(expr) => write!(f, "NodeCallExpr"),
+        }
+    }
 }
 
 impl Expr {
@@ -204,7 +224,7 @@ impl NegExpr {
 }
 
 pub struct TupleExpr {
-    pub values: Vec<Box<Expr>>,
+    pub values: Vec<Expr>,
 }
 
 impl TupleExpr {
@@ -225,6 +245,7 @@ pub struct MemberExpr {
 impl MemberExpr {
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
+        let key = self.rhs.eval(ctx)?.to_string();
         if let VarType::Ref(id) = *&vl {
             let borrowed_ctx = &*ctx.borrow();
             let data = borrowed_ctx
@@ -232,9 +253,8 @@ impl MemberExpr {
                 .borrow()
                 .data
                 .get_or_err(borrowed_ctx, id)?;
-            let borrowed_data = &*data.borrow();
-            if let MemData::Mess(mess) = &borrowed_data.data {
-                let key = self.rhs.eval(ctx)?.to_string();
+            let data_item = &data.borrow().data;
+            if let MemData::Mess(mess) = &data_item {
                 if let Some(value) = mess.get(&key) {
                     return Ok(value.clone());
                 }
@@ -242,7 +262,7 @@ impl MemberExpr {
             } else {
                 return Err(CodeExecError::new(
                     borrowed_ctx,
-                    format!("Expected node, got {:?}", data),
+                    format!("Expected node, got {:?}", data_item),
                 ));
             }
         } else {
@@ -255,6 +275,7 @@ impl MemberExpr {
 
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
+        let key = self.rhs.eval(ctx)?.to_string();
         if let VarType::Ref(id) = *&vl {
             let borrowed_ctx = &*ctx.borrow();
             let data = borrowed_ctx
@@ -264,7 +285,6 @@ impl MemberExpr {
                 .get_or_err(borrowed_ctx, id)?;
             let borrowed_data = &mut *data.borrow_mut();
             if let MemData::Mess(mess) = &mut borrowed_data.data {
-                let key = self.rhs.eval(ctx)?.to_string();
                 mess.set(&key, val);
                 return Ok(());
             } else {
@@ -289,33 +309,33 @@ pub struct NodeCallExpr {
 
 impl NodeCallExpr {
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
-        let borrowed_ctx = &*ctx.borrow();
+        let node_name = self.node_name.eval(ctx)?;
         match &self.args {
-            VarType::Tuple(args) => {
-                let node_name = self.node_name.eval(ctx)?;
-                match node_name {
-                    VarType::String(node_name) => {
-                        let var = borrowed_ctx
-                            .get_symbol_or_err(borrowed_ctx, &node_name)?
-                            .clone();
-                        if let VarType::Node(node) = var {
-                            let result = node.exec(&args.items)?;
-                            Ok(result)
+            VarType::Tuple(args) => match node_name {
+                VarType::String(node_name) => {
+                    if let Some(mem) = ctx.borrow().get_mem(&node_name) {
+                        if let MemData::Node(node) = &mem.borrow().data {
+                            return node.exec(&args.items);
                         } else {
                             return Err(CodeExecError::new(
-                                borrowed_ctx,
-                                format!("Expected node, got {:?}", var),
+                                &ctx.borrow(),
+                                format!("Expected node, got {:?}", mem),
                             ));
                         }
+                    } else {
+                        return Err(CodeExecError::new(
+                            &ctx.borrow(),
+                            format!("Cannot find node {:?}", node_name),
+                        ));
                     }
-                    _ => Err(CodeExecError::new(
-                        borrowed_ctx,
-                        format!("Expected string, got {:?}", node_name),
-                    )),
                 }
-            }
+                _ => Err(CodeExecError::new(
+                    &ctx.borrow(),
+                    format!("Expected string, got {:?}", node_name),
+                )),
+            },
             _ => Err(CodeExecError::new(
-                borrowed_ctx,
+                &ctx.borrow(),
                 format!("Expected array, got {:?}", self.args),
             )),
         }

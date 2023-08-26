@@ -1,11 +1,16 @@
 use once_cell::sync::Lazy;
 use pest::{
-    iterators::Pairs,
+    iterators::{Pair, Pairs},
     pratt_parser::{Assoc, Op, PrattParser},
 };
 
-use crate::expr::{
-    AddExpr, DivExpr, Expr, IntLiteral, MemberExpr, ModExpr, MulExpr, NegExpr, SubExpr, TupleExpr,
+use crate::{
+    data::lvalue::LValue,
+    expr::{
+        AddExpr, DivExpr, Expr, IntLiteral, MemberExpr, ModExpr, MulExpr, NegExpr, SubExpr,
+        TupleExpr,
+    },
+    statement::CodeExecError,
 };
 
 use super::Rule;
@@ -22,19 +27,41 @@ static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
         .op(Op::infix(Rule::node_call_op, Assoc::Left))
 });
 
-pub fn parse_expr(pairs: Pairs<Rule>) -> Box<Expr> {
+pub fn parse_lvalue(pairs: Pairs<Rule>) -> Result<LValue, CodeExecError> {
+    let mut pairs = pairs.into_iter();
+    let pair = pairs.next().unwrap();
+    match pair.as_rule() {
+        Rule::identifier => Ok(LValue::Identifier(pair.as_str().to_string())),
+        Rule::expr => {
+            let expr = parse_expr(pairs);
+            if let Expr::Member(member) = expr {
+                Ok(LValue::MemberExpr(member))
+            } else {
+                Err(CodeExecError::new_str(format!(
+                    "Expected member expression, found {:?}",
+                    expr
+                )))
+            }
+        }
+        _ => unreachable!(),
+    }
+}
+
+pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
     PRATT_PARSER
         .map_primary(|primary| match primary.as_rule() {
-            Rule::int_literal => Box::new(Expr::Int(IntLiteral {
+            Rule::int_literal => Expr::Int(IntLiteral {
                 value: primary.as_str().parse::<i64>().unwrap(),
-            })),
+            }),
             Rule::expr => parse_expr(primary.into_inner()), // from "(" ~ expr ~ ")"
             _ => unreachable!(),
         })
         .map_prefix(|op, rhs| match op.as_rule() {
             Rule::pos_neg_op => {
                 if op.as_str() == "-" {
-                    Box::new(Expr::Neg(NegExpr { value: rhs }))
+                    Expr::Neg(NegExpr {
+                        value: Box::new(rhs),
+                    })
                 } else {
                     rhs
                 }
@@ -43,21 +70,39 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Box<Expr> {
         })
         .map_infix(|mut lhs, op, rhs| match op.as_rule() {
             Rule::tuple_op => {
-                if let Expr::Tuple(tuple) = lhs.as_mut() {
+                if let Expr::Tuple(tuple) = &mut lhs {
                     tuple.values.push(rhs);
                     lhs
                 } else {
-                    Box::new(Expr::Tuple(TupleExpr {
+                    Expr::Tuple(TupleExpr {
                         values: vec![lhs, rhs],
-                    }))
+                    })
                 }
             }
-            Rule::member_op => Box::new(Expr::Member(MemberExpr { lhs, rhs })),
-            Rule::add_op => Box::new(Expr::Add(AddExpr { lhs, rhs })),
-            Rule::sub_op => Box::new(Expr::Sub(SubExpr { lhs, rhs })),
-            Rule::mul_op => Box::new(Expr::Mul(MulExpr { lhs, rhs })),
-            Rule::div_op => Box::new(Expr::Div(DivExpr { lhs, rhs })),
-            Rule::mod_op => Box::new(Expr::Mod(ModExpr { lhs, rhs })),
+            Rule::member_op => Expr::Member(MemberExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
+            Rule::add_op => Expr::Add(AddExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
+            Rule::sub_op => Expr::Sub(SubExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
+            Rule::mul_op => Expr::Mul(MulExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
+            Rule::div_op => Expr::Div(DivExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
+            Rule::mod_op => Expr::Mod(ModExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            }),
             _ => unreachable!(),
         })
         .parse(pairs)

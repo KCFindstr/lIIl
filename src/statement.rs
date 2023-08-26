@@ -1,10 +1,12 @@
 use crate::{
     data::context::Context,
     data::{context::ContextRc, variable::VarType},
+    expr::Expr,
 };
 
-use self::rm::RmStatement;
+use self::{ass::AssStatement, rm::RmStatement};
 
+pub mod ass;
 pub mod rm;
 
 #[derive(Debug)]
@@ -21,9 +23,11 @@ impl CodeExecError {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum Statement {
     Rm(RmStatement),
+    Ass(AssStatement),
+    Expr(ExprStatement),
     Stmts(Statements),
 }
 
@@ -31,12 +35,14 @@ impl Statement {
     pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
         match self {
             Statement::Rm(stmt) => stmt.exec(ctx),
+            Statement::Ass(stmt) => stmt.exec(ctx),
+            Statement::Expr(stmt) => stmt.exec(ctx),
             Statement::Stmts(stmt) => stmt.exec(ctx),
         }
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Statements {
     pub stmts: Vec<Statement>,
 }
@@ -55,5 +61,17 @@ impl Statements {
     }
     pub fn push(&mut self, stmt: Statement) {
         self.stmts.push(stmt);
+    }
+}
+
+#[derive(Debug)]
+pub struct ExprStatement {
+    pub expr: Expr,
+}
+
+impl ExprStatement {
+    pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
+        self.expr.eval(ctx)?;
+        Ok(None)
     }
 }

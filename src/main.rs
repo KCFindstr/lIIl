@@ -17,5 +17,5 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let module = parser::parse_file(&args.source_file).unwrap();
+    let module = parser::parse_file(&args.source_file, None).unwrap();
 }

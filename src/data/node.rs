@@ -4,10 +4,10 @@ use crate::statement::{CodeExecError, Statement, Statements};
 
 use super::{
     context::{Context, ContextRc},
+    data::MemData,
     variable::VarType,
 };
 
-#[derive(Clone)]
 pub enum Node {
     Code(CodeNode),
     Native(NativeNode),
@@ -28,7 +28,6 @@ impl fmt::Debug for Node {
     }
 }
 
-#[derive(Clone)]
 pub struct CodeNode {
     parent: ContextRc,
     args: Vec<String>,
@@ -93,9 +92,10 @@ impl NativeNode {
     }
 
     pub fn as_vartype(parent: &ContextRc, func: NativeFunc) -> VarType {
-        VarType::Node(Node::Native(NativeNode {
+        let node = MemData::Node(Node::Native(NativeNode {
             parent: parent.clone(),
             func,
-        }))
+        }));
+        VarType::Ref(parent.borrow().get_global().borrow_mut().data.add(node))
     }
 }
