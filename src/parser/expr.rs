@@ -7,13 +7,13 @@ use pest::{
 use crate::{
     data::lvalue::LValue,
     expr::{
-        AddExpr, DivExpr, Expr, IntLiteral, MemberExpr, ModExpr, MulExpr, NegExpr, NodeCallExpr,
-        SubExpr, TupleExpr,
+        AddExpr, DivExpr, Expr, IdentifierExpr, MemberExpr, ModExpr, MulExpr, NegExpr,
+        NodeCallExpr, SubExpr, TupleExpr,
     },
     statement::CodeExecError,
 };
 
-use super::Rule;
+use super::{literal::parse_literal, Rule};
 
 static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
     PrattParser::new()
@@ -50,8 +50,9 @@ pub fn parse_lvalue(pairs: Pairs<Rule>) -> Result<LValue, CodeExecError> {
 pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
     PRATT_PARSER
         .map_primary(|primary| match primary.as_rule() {
-            Rule::int_literal => Expr::Int(IntLiteral {
-                value: primary.as_str().parse::<i64>().unwrap(),
+            Rule::literal_expr => Expr::Literal(parse_literal(primary.into_inner())),
+            Rule::identifier => Expr::Identifier(IdentifierExpr {
+                name: primary.as_str().to_string(),
             }),
             Rule::expr => parse_expr(primary.into_inner()), // from "(" ~ expr ~ ")"
             _ => unreachable!(),

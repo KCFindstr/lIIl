@@ -44,6 +44,29 @@ impl Context {
         global.borrow_mut().context_root = Some(ret.clone());
         return ret;
     }
+    fn enter(ctx: &ContextRc) {
+        ctx.borrow()
+            .get_global()
+            .borrow_mut()
+            .stack
+            .push(ctx.clone())
+    }
+    fn exit(ctx: &ContextRc) {
+        let poped = ctx
+            .borrow()
+            .get_global()
+            .borrow_mut()
+            .stack
+            .pop()
+            .expect("Context stack is empty.");
+        assert!(Rc::ptr_eq(&poped, ctx), "Context stack is corrupted.");
+    }
+    pub fn with<T>(ctx: &ContextRc, f: impl FnOnce() -> T) -> T {
+        Context::enter(ctx);
+        let ret = f();
+        Context::exit(ctx);
+        return ret;
+    }
 }
 
 impl Context {

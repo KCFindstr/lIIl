@@ -1,9 +1,7 @@
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-use crate::statement::CodeExecError;
-
 use super::{
-    context::{Context, ContextRc, GlobalRc},
+    context::{ContextRc, GlobalRc},
     data::MemData,
     module_manager::{register_builtin_modules, ModuleFactoryManager},
     stack::ProgramStack,
@@ -44,11 +42,6 @@ impl GlobalData {
 
     pub fn get(&self, id: i64) -> Option<DataItemRc> {
         self.variables.get(&id).and_then(|v| Some(v.clone()))
-    }
-
-    pub fn get_or_err(&self, ctx: &Context, id: i64) -> Result<DataItemRc, CodeExecError> {
-        self.get(id)
-            .ok_or(CodeExecError::new(ctx, format!("Symbol {} not found", id)))
     }
 
     fn next_id(&mut self) -> i64 {

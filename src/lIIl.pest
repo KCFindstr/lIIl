@@ -89,7 +89,7 @@ expr_primary = {
 }
 
 /// Literal expression
-literal_expr = _{ string_literal | int_literal | float_literal }
+literal_expr = _{ string_literal | int_literal | float_literal | bool_literal }
 
 /// Literals.
 string_literal = @{
@@ -100,3 +100,5 @@ string_literal = @{
 int_literal = @{ ASCII_DIGIT+ }
 
 float_literal = @{ ASCII_DIGIT+ ~ "," ~ ASCII_DIGIT* }
+
+bool_literal = _{ "O" | "X" }

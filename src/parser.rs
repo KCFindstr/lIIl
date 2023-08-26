@@ -38,6 +38,8 @@ pub fn parse_file(file: &str, root_ctx: Option<&ContextRc>) -> Result<CodeModule
     let input = std::fs::read_to_string(file)
         .map_err(|e| CodeExecError::new_str(format!("IO error: {:?}", e)))?;
     let mut module = CodeModule::new("lIIl", abs_file, &context);
-    parse(&mut module, &input)?;
-    Ok(module)
+    Context::with(&context, || {
+        parse(&mut module, &input)?;
+        Ok(module)
+    })
 }

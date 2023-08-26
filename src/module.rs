@@ -58,8 +58,10 @@ impl CodeModule {
         }
     }
     pub fn exec(&mut self) -> Result<VarType, CodeExecError> {
-        self.stmts.exec(&self.ctx)?;
-        return Ok(VarType::Ref(self.ctx.borrow().get_symbol_mess_id()));
+        Context::with(&self.ctx, || {
+            self.stmts.exec(&self.ctx)?;
+            Ok(VarType::Ref(self.ctx.borrow().get_symbol_mess_id()))
+        })
     }
 }
 
@@ -84,7 +86,9 @@ impl NativeModule {
         }
     }
     pub fn exec(&self) -> Result<VarType, CodeExecError> {
-        let mess = self.module.exec(&self.ctx)?;
-        return Ok(self.ctx.borrow().add_mem(MemData::Mess(mess)));
+        Context::with(&self.ctx, || {
+            let mess = self.module.exec(&self.ctx)?;
+            return Ok(self.ctx.borrow().add_mem(MemData::Mess(mess)));
+        })
     }
 }

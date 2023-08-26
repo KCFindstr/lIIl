@@ -5,6 +5,7 @@ use crate::{
     data::{
         context::ContextRc,
         data::{Array, MemData},
+        global::DataItemRc,
         variable::VarType,
     },
     statement::CodeExecError,
@@ -34,9 +35,8 @@ fn promote_type(
 }
 
 pub enum Expr {
-    Int(IntLiteral),
-    String(StringLiteral),
-    Float(FloatLiteral),
+    Literal(LiteralExpr),
+    Identifier(IdentifierExpr),
     Add(AddExpr),
     Sub(SubExpr),
     Mul(MulExpr),
@@ -51,9 +51,8 @@ pub enum Expr {
 impl Debug for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expr::Int(_expr) => write!(f, "IntExpr"),
-            Expr::String(_expr) => write!(f, "StringExpr"),
-            Expr::Float(_expr) => write!(f, "FloatExpr"),
+            Expr::Literal(_expr) => write!(f, "LiteralExpr"),
+            Expr::Identifier(_expr) => write!(f, "IdentifierExpr"),
             Expr::Add(_expr) => write!(f, "AddExpr"),
             Expr::Sub(_expr) => write!(f, "SubExpr"),
             Expr::Mul(_expr) => write!(f, "MulExpr"),
@@ -70,9 +69,8 @@ impl Debug for Expr {
 impl Expr {
     pub fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         match self {
-            Expr::Int(expr) => expr.eval(ctx),
-            Expr::String(expr) => expr.eval(ctx),
-            Expr::Float(expr) => expr.eval(ctx),
+            Expr::Literal(expr) => expr.eval(ctx),
+            Expr::Identifier(expr) => expr.eval(ctx),
             Expr::Add(expr) => expr.eval(ctx),
             Expr::Sub(expr) => expr.eval(ctx),
             Expr::Mul(expr) => expr.eval(ctx),
@@ -86,33 +84,23 @@ impl Expr {
     }
 }
 
-pub struct IntLiteral {
-    pub value: i64,
+pub struct LiteralExpr {
+    pub value: VarType,
 }
 
-impl IntLiteral {
+impl LiteralExpr {
     fn eval(&self, _: &ContextRc) -> Result<VarType, CodeExecError> {
-        Ok(VarType::Int(self.value))
+        Ok(self.value.clone())
     }
 }
 
-pub struct StringLiteral {
-    pub value: String,
+pub struct IdentifierExpr {
+    pub name: String,
 }
 
-impl StringLiteral {
-    fn eval(&self, _: &ContextRc) -> Result<VarType, CodeExecError> {
-        Ok(VarType::String(self.value.clone()))
-    }
-}
-
-pub struct FloatLiteral {
-    pub value: f64,
-}
-
-impl FloatLiteral {
-    fn eval(&self, _: &ContextRc) -> Result<VarType, CodeExecError> {
-        Ok(VarType::Float(self.value))
+impl IdentifierExpr {
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+        ctx.borrow().get_symbol_or_err(&self.name)
     }
 }
 
@@ -242,17 +230,15 @@ pub struct MemberExpr {
 }
 
 impl MemberExpr {
-    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+    fn get_data(&self, ctx: &ContextRc) -> Result<DataItemRc, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
-        let key = self.rhs.eval(ctx)?.to_string();
         if let VarType::Ref(id) = vl {
-            let borrowed_ctx = &*ctx.borrow();
-            if let Some(data) = borrowed_ctx.get_mem_by_ref(id) {
-                Ok(data.borrow().data.get(&key))
+            if let Some(data) = ctx.borrow().get_mem_by_ref(id) {
+                Ok(data)
             } else {
                 Err(CodeExecError::new(
                     &ctx.borrow(),
-                    format!("Symbol {:?} not found", key),
+                    format!("Ref {:?} not found", id),
                 ))
             }
         } else {
@@ -262,25 +248,17 @@ impl MemberExpr {
             ))
         }
     }
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+        let key = self.rhs.eval(ctx)?.to_string();
+        Ok(self.get_data(ctx)?.borrow().data.get(&key))
+    }
 
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
-        let vl = self.lhs.eval(ctx)?;
         let key = self.rhs.eval(ctx)?.to_string();
-        if let VarType::Ref(id) = vl {
-            let borrowed_ctx = &*ctx.borrow();
-            let data = borrowed_ctx
-                .get_global()
-                .borrow()
-                .data
-                .get_or_err(borrowed_ctx, id)?;
-            let mut borrowed_data = data.borrow_mut();
-            borrowed_data.data.set(borrowed_ctx, &key, val)
-        } else {
-            return Err(CodeExecError::new(
-                &ctx.borrow(),
-                format!("Expected ref, got {:?}", vl),
-            ));
-        }
+        self.get_data(ctx)?
+            .borrow_mut()
+            .data
+            .set(&ctx.borrow(), &key, val)
     }
 }
 

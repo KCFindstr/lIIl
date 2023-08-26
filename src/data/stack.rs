@@ -9,15 +9,11 @@ impl ProgramStack {
         ProgramStack { stack: Vec::new() }
     }
 
-    pub fn push(&mut self, ctx: &ContextRc) {
-        self.stack.push(ctx.clone());
+    pub fn push(&mut self, ctx: ContextRc) {
+        self.stack.push(ctx);
     }
 
     pub fn pop(&mut self) -> Option<ContextRc> {
         self.stack.pop()
-    }
-
-    pub fn top(&self) -> Option<&ContextRc> {
-        self.stack.last()
     }
 }
