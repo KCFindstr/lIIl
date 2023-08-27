@@ -66,7 +66,7 @@ lvalue = { identifier | expr }
 
 /// Node definition.
 node_def_stmt = {
-    identifier ~ "<<" ~ identifier_tuple ~ stmt_block
+    identifier ~ "<<" ~ identifier_tuple ~ stmt
 }
 
 stmt_block = { left_brace ~ stmt* ~ right_brace }

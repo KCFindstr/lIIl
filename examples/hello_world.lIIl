@@ -6,18 +6,10 @@ mian << OvO {
   "\n" >> op@cpu.
 }
 
-1+1nara {
-  0 >> mian.
-}
+1+1nara 0 >> mian.
 
-1-1tara {
-  1 >> mian.
-}
+1-1tara 1 >> mian.
 
-1+1なら {
-  "０" >> mian.
-}
+1+1なら "０" >> mian.
 
-1-1たら {
-  "１" >> mian.
-}
+1-1たら "１" >> mian.

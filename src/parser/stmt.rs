@@ -78,14 +78,14 @@ fn parse_node_def(
         match pair.as_rule() {
             Rule::identifier => name = Some(pair.as_str().to_owned()),
             Rule::identifier_tuple => args = Some(parse_identifier_tuple(pair.into_inner())?),
-            Rule::stmt_block => body = Some(parse_stmt_block(module, pair.into_inner())?),
+            Rule::stmt => body = Some(parse_stmt(module, pair.into_inner())?),
             _ => panic!("parse_node_def: {:?}", pair),
         }
     }
     Ok(NodeDefStatement {
         name: name.unwrap(),
         args: args.unwrap(),
-        body: body.unwrap(),
+        body: Box::new(body.unwrap()),
     })
 }
 
