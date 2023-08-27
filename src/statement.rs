@@ -6,9 +6,10 @@ use crate::{
     expr::Expr,
 };
 
-use self::{ass::AssStatement, node_def::NodeDefStatement, rm::RmStatement};
+use self::{ass::AssStatement, if_stmt::IfStatement, node_def::NodeDefStatement, rm::RmStatement};
 
 pub mod ass;
+pub mod if_stmt;
 pub mod node_def;
 pub mod rm;
 
@@ -36,6 +37,7 @@ pub enum Statement {
     Rm(RmStatement),
     Ass(AssStatement),
     Expr(ExprStatement),
+    If(IfStatement),
     NodeDef(NodeDefStatement),
     Stmts(Statements),
 }
@@ -46,6 +48,7 @@ impl Statement {
             Statement::Rm(stmt) => stmt.exec(ctx),
             Statement::Ass(stmt) => stmt.exec(ctx),
             Statement::Expr(stmt) => stmt.exec(ctx),
+            Statement::If(stmt) => stmt.exec(ctx),
             Statement::NodeDef(stmt) => stmt.exec(ctx),
             Statement::Stmts(stmt) => stmt.exec(ctx),
         }

@@ -4,8 +4,8 @@ use crate::{
     module::CodeModule,
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
-        ass::AssStatement, node_def::NodeDefStatement, rm::RmStatement, CodeExecError,
-        ExprStatement, Statement, Statements,
+        ass::AssStatement, if_stmt::IfStatement, node_def::NodeDefStatement, rm::RmStatement,
+        CodeExecError, ExprStatement, Statement, Statements,
     },
 };
 
@@ -51,6 +51,22 @@ fn parse_ass(pairs: Pairs<Rule>) -> Result<AssStatement, CodeExecError> {
     })
 }
 
+fn parse_if(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<IfStatement, CodeExecError> {
+    let mut cond = None;
+    let mut body = None;
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::expr => cond = Some(parse_expr(pair.into_inner())),
+            Rule::stmt => body = Some(parse_stmt(module, pair.into_inner())?),
+            _ => panic!("parse_ass: {:?}", pair),
+        }
+    }
+    Ok(IfStatement {
+        cond: cond.unwrap(),
+        body: Box::new(body.unwrap()),
+    })
+}
+
 fn parse_node_def(
     module: &mut CodeModule,
     pairs: Pairs<Rule>,
@@ -89,6 +105,7 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
                     pair.into_inner(),
                 )?))
             }
+            Rule::if_stmt => return Ok(Statement::If(parse_if(module, pair.into_inner())?)),
             Rule::stmt_block => {
                 return Ok(Statement::Stmts(parse_stmt_block(
                     module,

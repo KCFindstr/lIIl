@@ -41,3 +41,17 @@ impl ToString for VarType {
         }
     }
 }
+
+impl Into<bool> for VarType {
+    fn into(self) -> bool {
+        match self {
+            VarType::Nzero => false,
+            VarType::Bool(val) => val,
+            VarType::Int(val) => val != 0,
+            VarType::Float(val) => val != 0.0,
+            VarType::String(val) => val != "",
+            VarType::Tuple(val) => val.len() != 0,
+            VarType::Ref(val) => val != 0,
+        }
+    }
+}
