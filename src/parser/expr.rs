@@ -23,8 +23,8 @@ static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
             | Op::infix(Rule::div_op, Assoc::Left)
             | Op::infix(Rule::mod_op, Assoc::Left))
         .op(Op::prefix(Rule::pos_neg_op))
-        .op(Op::infix(Rule::member_op, Assoc::Left))
         .op(Op::infix(Rule::node_call_op, Assoc::Left))
+        .op(Op::infix(Rule::member_op, Assoc::Right))
 });
 
 pub fn parse_lvalue(pairs: Pairs<Rule>) -> Result<LValue, CodeExecError> {
@@ -43,20 +43,29 @@ pub fn parse_lvalue(pairs: Pairs<Rule>) -> Result<LValue, CodeExecError> {
                 )))
             }
         }
-        _ => unreachable!(),
+        _ => panic!("parse_lvalue: {:?}", pair),
     }
+}
+
+fn parse_expr_primary(pairs: Pairs<Rule>) -> Expr {
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::literal_expr => return parse_literal(pair.into_inner()),
+            Rule::identifier => {
+                return Expr::Identifier(IdentifierExpr {
+                    name: pair.as_str().to_string(),
+                })
+            }
+            Rule::expr => return parse_expr(pair.into_inner()), // from "(" ~ expr ~ ")"
+            _ => panic!("parse_expr_primary: {:?}", pair),
+        }
+    }
+    panic!("parse_expr_primary: Reached end of input")
 }
 
 pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
     PRATT_PARSER
-        .map_primary(|primary| match primary.as_rule() {
-            Rule::literal_expr => Expr::Literal(parse_literal(primary.into_inner())),
-            Rule::identifier => Expr::Identifier(IdentifierExpr {
-                name: primary.as_str().to_string(),
-            }),
-            Rule::expr => parse_expr(primary.into_inner()), // from "(" ~ expr ~ ")"
-            _ => unreachable!(),
-        })
+        .map_primary(|primary| parse_expr_primary(primary.into_inner()))
         .map_prefix(|op, rhs| match op.as_rule() {
             Rule::pos_neg_op => {
                 if op.as_str() == "-" {
@@ -67,7 +76,7 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
                     rhs
                 }
             }
-            _ => unreachable!(),
+            _ => panic!("parse_expr (prefix): {:?}", op),
         })
         .map_infix(|mut lhs, op, rhs| match op.as_rule() {
             Rule::add_op => Expr::Add(AddExpr {
@@ -108,7 +117,7 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
                     })
                 }
             }
-            _ => unreachable!(),
+            _ => panic!("parse_expr (infix): {:?}", op),
         })
         .parse(pairs)
 }

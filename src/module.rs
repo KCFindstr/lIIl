@@ -49,13 +49,18 @@ pub struct CodeModule {
 }
 
 impl CodeModule {
-    pub fn new(name: &str, path: &str, parent: &ContextRc) -> Self {
-        CodeModule {
+    const MIAN_MODULE_KEY: &'static str = "isMian";
+    pub fn new(name: &str, path: &str, parent: &ContextRc, is_root: bool) -> Self {
+        let ret = CodeModule {
             name: name.to_string(),
             path: Path::new(path),
             ctx: Context::new_rc(parent),
             stmts: Statements::new(),
-        }
+        };
+        ret.ctx
+            .borrow()
+            .set_symbol(CodeModule::MIAN_MODULE_KEY, VarType::Bool(is_root));
+        ret
     }
     pub fn exec(&mut self) -> Result<VarType, CodeExecError> {
         Context::with(&self.ctx, || {

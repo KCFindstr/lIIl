@@ -7,9 +7,9 @@ COMMENT = _{
 ////////////////////////////////////////////////////////////////////////////////
 /// Common definitions
 ////////////////////////////////////////////////////////////////////////////////
-double_quote = _{ "\"" }
+double_quote = { "\"" }
 
-single_quote = _{ "'" }
+single_quote = { "'" }
 
 left_brace = _{ "{" }
 
@@ -19,7 +19,11 @@ left_paren = _{ "(" }
 
 right_paren = _{ ")" }
 
-pos_neg_op = _{ "+" | "-" }
+left_bracket = _{ "[" }
+
+right_bracket = _{ "]" }
+
+pos_neg_op = { "+" | "-" }
 
 escape = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" | NEWLINE) }
 
@@ -73,15 +77,15 @@ expr = {
 }
 
 expr_infix = _{ add_op | sub_op | mul_op | div_op | mod_op | member_op | node_call_op | tuple_op }
-add_op = _{ "+" }
-sub_op = _{ "-" }
-mul_op = _{ "*" }
-div_op = _{ "÷" }
-mod_op = _{ "%" }
-member_op = _{ "/" }
-tuple_op = _{ "|" }
-node_call_op = _{ ">>" }
-expr_prefix = _{ pos_neg_op }
+add_op = { "+" }
+sub_op = { "-" }
+mul_op = { "*" }
+div_op = { "/" }
+mod_op = { "%" }
+member_op = { "@" }
+tuple_op = { "|" }
+node_call_op = { ">>" }
+expr_prefix = { pos_neg_op }
 expr_primary = {
   left_paren ~ expr ~ right_paren
   | literal_expr
@@ -89,10 +93,17 @@ expr_primary = {
 }
 
 /// Literal expression
-literal_expr = _{ string_literal | int_literal | float_literal | bool_literal }
+literal_expr = {
+  string_literal
+  | int_literal
+  | float_literal
+  | bool_literal
+  | nzero_literal
+  | array_literal
+}
 
 /// Literals.
-string_literal = @{
+string_literal = ${
     (double_quote ~ (escape | !(double_quote | "\\" | NEWLINE) ~ ANY)* ~ double_quote)
   | (single_quote ~ (escape | !(single_quote | "\\" | NEWLINE) ~ ANY)* ~ single_quote)
 }
@@ -101,4 +112,8 @@ int_literal = @{ ASCII_DIGIT+ }
 
 float_literal = @{ ASCII_DIGIT+ ~ "," ~ ASCII_DIGIT* }
 
-bool_literal = _{ "O" | "X" }
+bool_literal = { "O" | "X" }
+
+nzero_literal = { "N0" | "Nzero" }
+
+array_literal = { left_bracket ~ expr ~ right_bracket }

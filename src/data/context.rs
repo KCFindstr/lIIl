@@ -13,8 +13,8 @@ pub type GlobalRc = Rc<RefCell<Global>>;
 
 pub struct Context {
     global: GlobalRc,
-    pub parent: Option<ContextRc>,
-    pub messId: i64,
+    parent: Option<ContextRc>,
+    messId: i64,
 }
 
 impl Context {
@@ -70,7 +70,7 @@ impl Context {
 }
 
 impl Context {
-    fn get_data_item(&self) -> DataItemRc {
+    fn get_mess_item(&self) -> DataItemRc {
         self.global.borrow().data.get(self.messId).unwrap()
     }
 
@@ -106,7 +106,7 @@ impl Context {
     }
 
     pub fn get_symbol(&self, name: &str) -> Option<VarType> {
-        let data_item = self.get_data_item();
+        let data_item = self.get_mess_item();
         if data_item.borrow().data.has(&name) {
             return Some(data_item.borrow().data.get(&name));
         }
@@ -122,7 +122,7 @@ impl Context {
     }
 
     pub fn has_symbol(&self, name: &str) -> bool {
-        let data_item = self.get_data_item();
+        let data_item = self.get_mess_item();
         if data_item.borrow().data.has(&name) {
             return true;
         }
@@ -133,18 +133,24 @@ impl Context {
         }
     }
 
-    pub fn set_symbol(&self, name: &str, value: VarType) -> Result<(), CodeExecError> {
-        let data_item = self.get_data_item();
+    pub fn set_symbol(&self, name: &str, value: VarType) {
+        let data_item = self.get_mess_item();
         if data_item.borrow().data.has(&name) {
-            return data_item.borrow_mut().data.set(&self, &name, value);
+            data_item
+                .borrow_mut()
+                .data
+                .set(&self, &name, value)
+                .unwrap();
+            return;
         }
         if let Some(parent) = &self.parent {
             parent.borrow().set_symbol(name, value)
         } else {
-            Err(CodeExecError::new(
-                &self,
-                format!("Symbol {} not found.", name.to_string()),
-            ))
+            data_item
+                .borrow_mut()
+                .data
+                .set(&self, &name, value)
+                .unwrap();
         }
     }
 

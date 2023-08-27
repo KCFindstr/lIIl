@@ -3,5 +3,7 @@ rm cpu.
 v-- mian is application node
 mian << OvO { <-- mian is application node
 ^-- mian is application node
-  "Hello world" >> cpu/op.
+  "Hello world" >> op@cpu.
 }
+
+N0 >> mian.

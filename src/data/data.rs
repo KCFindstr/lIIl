@@ -122,4 +122,8 @@ impl Array {
         }
         false
     }
+
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
 }

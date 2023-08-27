@@ -5,7 +5,7 @@ use crate::{
 
 use super::CodeExecError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AssStatement {
     pub lhs: LValue,
     pub rhs: Expr,

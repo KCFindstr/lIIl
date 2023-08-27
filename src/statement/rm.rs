@@ -30,10 +30,11 @@ impl RmStatement {
         }
 
         // Built-in module.
-        if let Some(factory) = global.borrow().builtin_modules.get_factory(&self.path) {
-            let mut module = factory.create(&ctx.borrow().get_root());
+        let factory = global.borrow().builtin_modules.get_factory(&self.path);
+        if let Some(factory) = factory {
+            let mut module = factory(&ctx.borrow().get_root());
             let module_ret = module.exec()?;
-            ctx.borrow_mut().set_symbol(&self.path, module_ret)?;
+            ctx.borrow_mut().set_symbol(&self.path, module_ret);
             return Ok(None);
         }
 
@@ -48,12 +49,9 @@ impl RmStatement {
                 format!("Module {} not found", self.path),
             ));
         }
-        let mut module = parse_file(
-            module_path.to_str().unwrap(),
-            Some(&ctx.borrow().get_root()),
-        )?;
+        let mut module = parse_file(module_path.to_str().unwrap(), Some(ctx.borrow().get_root()))?;
         let module_ret = module.exec()?;
-        ctx.borrow_mut().set_symbol(&self.path, module_ret)?;
+        ctx.borrow_mut().set_symbol(&self.path, module_ret);
         module.exec()?;
         Ok(None)
     }

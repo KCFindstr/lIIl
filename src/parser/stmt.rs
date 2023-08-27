@@ -18,10 +18,8 @@ fn parse_stmt_block(
     let mut stmts = Statements::new();
     for pair in pairs {
         match pair.as_rule() {
-            Rule::left_brace => continue,
             Rule::stmt => stmts.push(parse_stmt(module, pair.into_inner())?),
-            Rule::right_brace => continue,
-            _ => unreachable!(),
+            _ => panic!("parse_stmt_block: {:?}", pair),
         }
     }
     Ok(stmts)
@@ -30,12 +28,11 @@ fn parse_stmt_block(
 fn parse_rm(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<RmStatement, CodeExecError> {
     for pair in pairs {
         match pair.as_rule() {
-            Rule::rm_stmt_prefix => continue,
             Rule::package_name => return Ok(RmStatement::new(module, pair.as_str())),
-            _ => unreachable!(),
+            _ => panic!("parse_rm: {:?}", pair),
         }
     }
-    unreachable!()
+    panic!("parse_rm: Reached end of input")
 }
 
 fn parse_ass(pairs: Pairs<Rule>) -> Result<AssStatement, CodeExecError> {
@@ -43,10 +40,9 @@ fn parse_ass(pairs: Pairs<Rule>) -> Result<AssStatement, CodeExecError> {
     let mut rhs = None;
     for pair in pairs {
         match pair.as_rule() {
-            Rule::ass_stmt_prefix => continue,
             Rule::lvalue => lhs = Some(parse_lvalue(pair.into_inner())?),
             Rule::expr => rhs = Some(parse_expr(pair.into_inner())),
-            _ => unreachable!(),
+            _ => panic!("parse_ass: {:?}", pair),
         }
     }
     Ok(AssStatement {
@@ -67,7 +63,7 @@ fn parse_node_def(
             Rule::identifier => name = Some(pair.as_str().to_owned()),
             Rule::identifier_tuple => args = Some(parse_identifier_tuple(pair.into_inner())?),
             Rule::stmt_block => body = Some(parse_stmt_block(module, pair.into_inner())?),
-            _ => unreachable!(),
+            _ => panic!("parse_node_def: {:?}", pair),
         }
     }
     Ok(NodeDefStatement {
@@ -80,7 +76,6 @@ fn parse_node_def(
 pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Statement, CodeExecError> {
     for pair in pairs {
         match pair.as_rule() {
-            Rule::stmt_end => continue,
             Rule::rm_stmt => return Ok(Statement::Rm(parse_rm(module, pair.into_inner())?)),
             Rule::ass_stmt => return Ok(Statement::Ass(parse_ass(pair.into_inner())?)),
             Rule::expr => {
@@ -100,7 +95,8 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
                     pair.into_inner(),
                 )?))
             }
-            _ => unreachable!(),
+            Rule::stmt_end => continue,
+            _ => panic!("parse_stmt: {:?}", pair),
         }
     }
     Ok(Statement::Stmts(Statements::new()))

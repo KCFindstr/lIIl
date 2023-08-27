@@ -31,7 +31,7 @@ impl CodeExecError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     Rm(RmStatement),
     Ass(AssStatement),
@@ -52,7 +52,7 @@ impl Statement {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Statements {
     pub stmts: Vec<Statement>,
 }
@@ -74,7 +74,7 @@ impl Statements {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExprStatement {
     pub expr: Expr,
 }

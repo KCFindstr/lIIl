@@ -4,6 +4,7 @@ use crate::{expr::MemberExpr, statement::CodeExecError};
 
 use super::{context::ContextRc, variable::VarType};
 
+#[derive(Clone)]
 pub enum LValue {
     Identifier(String),
     MemberExpr(MemberExpr),
@@ -21,7 +22,7 @@ impl Debug for LValue {
 impl LValue {
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
         match self {
-            LValue::Identifier(id) => ctx.borrow().set_symbol(&id, val),
+            LValue::Identifier(id) => Ok(ctx.borrow().set_symbol(&id, val)),
             LValue::MemberExpr(expr) => expr.set(ctx, val),
         }
     }

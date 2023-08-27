@@ -34,6 +34,7 @@ fn promote_type(
     }
 }
 
+#[derive(Clone)]
 pub enum Expr {
     Literal(LiteralExpr),
     Identifier(IdentifierExpr),
@@ -44,6 +45,7 @@ pub enum Expr {
     Mod(ModExpr),
     Neg(NegExpr),
     Tuple(TupleExpr),
+    Array(TupleExpr),
     Member(MemberExpr),
     NodeCall(NodeCallExpr),
 }
@@ -60,6 +62,7 @@ impl Debug for Expr {
             Expr::Mod(_expr) => write!(f, "ModExpr"),
             Expr::Neg(_expr) => write!(f, "NegExpr"),
             Expr::Tuple(_expr) => write!(f, "TupleExpr"),
+            Expr::Array(_expr) => write!(f, "ArrayExpr"),
             Expr::Member(_expr) => write!(f, "MemberExpr"),
             Expr::NodeCall(_expr) => write!(f, "NodeCallExpr"),
         }
@@ -78,12 +81,18 @@ impl Expr {
             Expr::Mod(expr) => expr.eval(ctx),
             Expr::Neg(expr) => expr.eval(ctx),
             Expr::Tuple(expr) => expr.eval(ctx),
+            Expr::Array(expr) => expr.eval(ctx),
             Expr::Member(expr) => expr.eval(ctx),
             Expr::NodeCall(expr) => expr.eval(ctx),
         }
     }
+
+    pub fn literal(value: VarType) -> Expr {
+        Expr::Literal(LiteralExpr { value })
+    }
 }
 
+#[derive(Clone)]
 pub struct LiteralExpr {
     pub value: VarType,
 }
@@ -94,6 +103,7 @@ impl LiteralExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct IdentifierExpr {
     pub name: String,
 }
@@ -104,6 +114,7 @@ impl IdentifierExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct AddExpr {
     pub lhs: Box<Expr>,
     pub rhs: Box<Expr>,
@@ -123,6 +134,7 @@ impl AddExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct SubExpr {
     pub lhs: Box<Expr>,
     pub rhs: Box<Expr>,
@@ -141,6 +153,7 @@ impl SubExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct MulExpr {
     pub lhs: Box<Expr>,
     pub rhs: Box<Expr>,
@@ -159,6 +172,7 @@ impl MulExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct DivExpr {
     pub lhs: Box<Expr>,
     pub rhs: Box<Expr>,
@@ -177,6 +191,7 @@ impl DivExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct ModExpr {
     pub lhs: Box<Expr>,
     pub rhs: Box<Expr>,
@@ -195,6 +210,7 @@ impl ModExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct NegExpr {
     pub value: Box<Expr>,
 }
@@ -210,6 +226,7 @@ impl NegExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct TupleExpr {
     pub values: Vec<Expr>,
 }
@@ -224,6 +241,7 @@ impl TupleExpr {
     }
 }
 
+#[derive(Clone)]
 pub struct MemberExpr {
     pub lhs: Box<Expr>,
     pub rhs: Box<Expr>,
@@ -231,9 +249,10 @@ pub struct MemberExpr {
 
 impl MemberExpr {
     fn get_data(&self, ctx: &ContextRc) -> Result<DataItemRc, CodeExecError> {
-        let vl = self.lhs.eval(ctx)?;
-        if let VarType::Ref(id) = vl {
-            if let Some(data) = ctx.borrow().get_mem_by_ref(id) {
+        let parent = self.rhs.eval(ctx)?;
+        if let VarType::Ref(id) = parent {
+            let data = ctx.borrow().get_mem_by_ref(id);
+            if let Some(data) = data {
                 Ok(data)
             } else {
                 Err(CodeExecError::new(
@@ -244,24 +263,47 @@ impl MemberExpr {
         } else {
             Err(CodeExecError::new(
                 &ctx.borrow(),
-                format!("Expected ref, got {:?}", vl),
+                format!("Expected ref, got {:?}", parent),
             ))
         }
     }
+    fn get_key(&self, ctx: &ContextRc) -> Result<String, CodeExecError> {
+        if let Expr::Identifier(id) = &*self.lhs {
+            Ok(id.name.clone())
+        } else if let Expr::Array(array) = &*self.lhs {
+            let arr = array.eval(ctx)?;
+            if let VarType::Tuple(tuple) = arr {
+                if tuple.len() == 1 {
+                    Ok(tuple.items[0].to_string())
+                } else {
+                    Err(CodeExecError::new(
+                        &ctx.borrow(),
+                        format!("Cannot index with {:?}", tuple),
+                    ))
+                }
+            } else {
+                panic!("Expected tuple, got {:?}", arr)
+            }
+        } else {
+            Ok(self.lhs.eval(ctx)?.to_string())
+        }
+    }
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
-        let key = self.rhs.eval(ctx)?.to_string();
-        Ok(self.get_data(ctx)?.borrow().data.get(&key))
+        let key = self.get_key(ctx)?;
+        let data = self.get_data(ctx)?;
+        let borrowed_data = data.borrow();
+        Ok(borrowed_data.data.get(&key))
     }
 
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
-        let key = self.rhs.eval(ctx)?.to_string();
-        self.get_data(ctx)?
-            .borrow_mut()
-            .data
-            .set(&ctx.borrow(), &key, val)
+        let key = self.get_key(ctx)?;
+        let data = self.get_data(ctx)?;
+        let mut borrowed_data = data.borrow_mut();
+        borrowed_data.data.set(&ctx.borrow(), &key, val)
     }
 }
 
+#[derive(Clone)]
 pub struct NodeCallExpr {
     pub node_name: Box<Expr>,
     pub args: Box<Expr>,
@@ -272,18 +314,21 @@ impl NodeCallExpr {
         let node_name = self.node_name.eval(ctx)?;
         let args = self.args.eval(ctx)?;
         if let VarType::Ref(id) = node_name {
-            if let Some(mem) = ctx.borrow().get_mem_by_ref(id) {
-                if let MemData::Node(node) = &mut mem.borrow_mut().data {
-                    if let VarType::Tuple(args_tuple) = args {
-                        node.exec(&args_tuple.items)
-                    } else {
-                        node.exec(&vec![args])
-                    }
+            let data_item = ctx.borrow().get_mem_by_ref(id);
+            if let Some(mem) = data_item {
+                let data = &mem.borrow_mut().data;
+                let mut node = if let MemData::Node(node) = data {
+                    node.clone()
                 } else {
-                    Err(CodeExecError::new(
+                    return Err(CodeExecError::new(
                         &ctx.borrow(),
                         format!("Expected node, got {:?}", mem),
-                    ))
+                    ));
+                };
+                if let VarType::Tuple(args_tuple) = args {
+                    node.exec(&args_tuple.items)
+                } else {
+                    node.exec(&vec![args])
                 }
             } else {
                 Err(CodeExecError::new(

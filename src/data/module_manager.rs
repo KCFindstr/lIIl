@@ -1,18 +1,14 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::module::{cpu::CpuModule, Module};
 
 use super::context::ContextRc;
 
-pub struct ModuleFactory {
-    pub name: String,
-    pub factory: Box<dyn Fn(&ContextRc) -> Module>,
-}
+pub type FactoryFn = Rc<dyn Fn(&ContextRc) -> Module>;
 
-impl ModuleFactory {
-    pub fn create(&self, parent: &ContextRc) -> Module {
-        (self.factory)(parent)
-    }
+struct ModuleFactory {
+    pub name: String,
+    pub factory: FactoryFn,
 }
 
 pub struct ModuleFactoryManager {
@@ -26,12 +22,18 @@ impl ModuleFactoryManager {
         }
     }
 
-    pub fn add_factory(&mut self, factory: ModuleFactory) {
-        self.factories.insert(factory.name.clone(), factory);
+    pub fn add_factory(&mut self, name: &str, factory: FactoryFn) {
+        self.factories.insert(
+            name.to_owned(),
+            ModuleFactory {
+                name: name.to_owned(),
+                factory,
+            },
+        );
     }
 
-    pub fn get_factory(&self, name: &str) -> Option<&ModuleFactory> {
-        self.factories.get(name)
+    pub fn get_factory(&self, name: &str) -> Option<FactoryFn> {
+        self.factories.get(name).map(|f| f.factory.clone())
     }
 }
 
