@@ -7,9 +7,9 @@ COMMENT = _{
 ////////////////////////////////////////////////////////////////////////////////
 /// Common definitions
 ////////////////////////////////////////////////////////////////////////////////
-double_quote = { "\"" }
+double_quote = _{ "\"" }
 
-single_quote = { "'" }
+single_quote = _{ "'" }
 
 left_brace = _{ "{" }
 
@@ -52,12 +52,12 @@ package_name = @{ identifier ~ ("/" ~ identifier)* }
 
 rm_stmt_prefix = _{ "rm" | "del" }
 
-rm_stmt = { rm_stmt_prefix ~ package_name }
+rm_stmt = ${ rm_stmt_prefix ~ WHITESPACE+ ~ package_name }
 
 /// ass stmt.
 ass_stmt_prefix = _{ "make" | "mk" }
 
-ass_stmt = { ass_stmt_prefix ~ lvalue ~ expr}
+ass_stmt = ${ ass_stmt_prefix ~ WHITESPACE+ ~ lvalue ~ WHITESPACE+ ~ expr}
 
 lvalue = { identifier | expr }
 
@@ -104,16 +104,19 @@ literal_expr = {
 
 /// Literals.
 string_literal = ${
-    (double_quote ~ (escape | !(double_quote | "\\" | NEWLINE) ~ ANY)* ~ double_quote)
-  | (single_quote ~ (escape | !(single_quote | "\\" | NEWLINE) ~ ANY)* ~ single_quote)
+    (double_quote ~ char_in_double* ~ double_quote)
+  | (single_quote ~ char_in_single* ~ single_quote)
 }
+
+char_in_double = { escape | (!(double_quote | "\\" | NEWLINE) ~ ANY) }
+char_in_single = { escape | (!(single_quote | "\\" | NEWLINE) ~ ANY) }
 
 int_literal = @{ ASCII_DIGIT+ }
 
 float_literal = @{ ASCII_DIGIT+ ~ "," ~ ASCII_DIGIT* }
 
-bool_literal = { "O" | "X" }
+bool_literal = { ("O" | "X") ~ !XID_CONTINUE }
 
-nzero_literal = { "N0" | "Nzero" }
+nzero_literal = { ("N0" | "Nzero") ~ !XID_CONTINUE }
 
 array_literal = { left_bracket ~ expr ~ right_bracket }

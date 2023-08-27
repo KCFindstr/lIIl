@@ -316,15 +316,18 @@ impl NodeCallExpr {
         if let VarType::Ref(id) = node_name {
             let data_item = ctx.borrow().get_mem_by_ref(id);
             if let Some(mem) = data_item {
-                let data = &mem.borrow_mut().data;
-                let mut node = if let MemData::Node(node) = data {
-                    node.clone()
-                } else {
-                    return Err(CodeExecError::new(
-                        &ctx.borrow(),
-                        format!("Expected node, got {:?}", mem),
-                    ));
-                };
+                let mut node;
+                {
+                    let data = &mem.borrow_mut().data;
+                    node = if let MemData::Node(node) = data {
+                        node.clone()
+                    } else {
+                        return Err(CodeExecError::new(
+                            &ctx.borrow(),
+                            format!("Expected node, got {:?}", mem),
+                        ));
+                    };
+                }
                 if let VarType::Tuple(args_tuple) = args {
                     node.exec(&args_tuple.items)
                 } else {

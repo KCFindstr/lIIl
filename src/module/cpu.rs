@@ -27,7 +27,7 @@ impl CpuModule {
                         .map(|item| item.to_string())
                         .collect::<Vec<String>>()
                         .join(" ");
-                    println!("{}", joined);
+                    print!("{}", joined);
                     Ok(VarType::Nzero)
                 },
             ),

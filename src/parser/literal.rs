@@ -23,22 +23,24 @@ pub fn parse_identifier_tuple(pairs: Pairs<Rule>) -> Result<Vec<String>, CodeExe
 // TODO: Change to this implementation after compound atomic is supported.
 pub fn _parse_string_literal(pairs: Pairs<Rule>) -> String {
     let mut s = "".to_owned();
-    println!("parse_string_literal: {:?}", pairs);
     for pair in pairs {
         match pair.as_rule() {
-            Rule::double_quote => continue,
-            Rule::single_quote => continue,
-            Rule::escape => s.push(match pair.as_str() {
-                "\\r" => '\r',
-                "\\n" => '\n',
-                "\\t" => '\t',
-                "\\0" => '\0',
-                other => other.chars().nth(1).unwrap(),
-            }),
+            Rule::char_in_double | Rule::char_in_single => {
+                s.push(match pair.as_str() {
+                    "\\\"" => '"',
+                    "\\\\" => '\\',
+                    "\\r" => '\r',
+                    "\\n" => '\n',
+                    "\\t" => '\t',
+                    "\\0" => '\0',
+                    "\\'" => '\'',
+                    "\\\n" => '\n',
+                    other => other.chars().nth(0).unwrap(),
+                });
+            }
             _ => panic!("parse_string_literal: {:?}", pair),
         }
     }
-    println!("parse_string_literal: {:?}", s);
     s
 }
 
@@ -79,7 +81,7 @@ pub fn parse_literal(pairs: Pairs<Rule>) -> Expr {
     let pair = pairs.peek().unwrap();
     match pair.as_rule() {
         Rule::string_literal => {
-            Expr::literal(VarType::String(parse_string_literal(pair.into_inner())))
+            Expr::literal(VarType::String(_parse_string_literal(pair.into_inner())))
         }
         Rule::int_literal => Expr::literal(VarType::Int(pair.as_str().parse::<i64>().unwrap())),
         Rule::float_literal => Expr::literal(VarType::Float(
