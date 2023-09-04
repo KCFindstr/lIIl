@@ -6,19 +6,23 @@ use crate::{
 use super::{CodeExecError, Statement};
 
 #[derive(Debug, Clone)]
-pub struct IfStatement {
+pub struct LoliStatement {
     pub cond: Expr,
     pub body: Box<Statement>,
 }
 
-impl IfStatement {
+impl LoliStatement {
     #[inline]
     pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
-        let rhs: bool = self.cond.eval(ctx)?.into();
-        if rhs {
-            self.body.exec(&ctx)
-        } else {
-            Ok(None)
+        loop {
+            let rhs: bool = self.cond.eval(ctx)?.into();
+            if !rhs {
+                break;
+            }
+            if let Some(ret) = self.body.exec(&ctx)? {
+                return Ok(Some(ret));
+            }
         }
+        Ok(None)
     }
 }

@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::statement::{CodeExecError, Statements};
+use crate::statement::{CodeExecError, Statement, Statements};
 
 use super::{
     context::{Context, ContextRc},
@@ -32,7 +32,7 @@ impl fmt::Debug for Node {
 pub struct CodeNode {
     parent: ContextRc,
     pub args: Vec<String>,
-    pub body: Statements,
+    pub body: Box<Statement>,
 }
 
 impl fmt::Debug for CodeNode {
@@ -55,11 +55,11 @@ impl Clone for CodeNode {
 }
 
 impl CodeNode {
-    pub fn new(parent: &ContextRc) -> Self {
+    pub fn new(parent: &ContextRc, body: Box<Statement>) -> Self {
         CodeNode {
             parent: parent.clone(),
             args: Vec::new(),
-            body: Statements::new(),
+            body: body,
         }
     }
 

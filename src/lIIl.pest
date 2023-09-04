@@ -39,6 +39,7 @@ module = { SOI ~ stmt* ~ EOI }
 stmt = {
   ((rm_stmt
     | ass_stmt
+    | loli_stmt
     | expr)? ~ stmt_end)
   | node_def_stmt
   | if_stmt
@@ -75,6 +76,12 @@ stmt_block = { left_brace ~ stmt* ~ right_brace }
 if_stmt = { expr ~ if_stmt_suffix ~ stmt }
 
 if_stmt_suffix = _{ "tara" | "たら" | "nara" | "なら" }
+
+/// loli stmt.
+
+loli_stmt = { loli_stmt_prefix ~ expr ~ stmt }
+
+loli_stmt_prefix = _{ "loli" }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Expressions
