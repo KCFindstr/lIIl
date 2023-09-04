@@ -50,7 +50,10 @@ pub struct CodeModule {
 
 impl CodeModule {
     const MIAN_MODULE_KEY: &'static str = "isMian";
-    pub fn new(name: &str, path: &str, parent: &ContextRc, is_root: bool) -> Self {
+    pub fn new(name: &str, mut path: &str, parent: &ContextRc, is_root: bool) -> Self {
+        if path.starts_with("\\\\?\\") {
+            path = &path[4..];
+        }
         let ret = CodeModule {
             name: name.to_string(),
             path: Path::new(path),

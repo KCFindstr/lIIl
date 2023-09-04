@@ -17,7 +17,7 @@ impl RmStatement {
     pub fn new(module: &CodeModule, path: &str) -> Self {
         RmStatement {
             path: path.to_owned(),
-            parent_path: module.path.clone(),
+            parent_path: module.path.parent(),
         }
     }
     pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
@@ -52,7 +52,6 @@ impl RmStatement {
         let mut module = parse_file(module_path.to_str().unwrap(), Some(ctx.borrow().get_root()))?;
         let module_ret = module.exec()?;
         ctx.borrow_mut().set_symbol(&self.path, module_ret);
-        module.exec()?;
         Ok(None)
     }
 }

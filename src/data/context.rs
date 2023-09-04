@@ -134,19 +134,23 @@ impl Context {
     }
 
     pub fn set_symbol(&self, name: &str, value: VarType) {
-        let data_item = self.get_mess_item();
-        if data_item.borrow().data.has(&name) {
-            data_item
-                .borrow_mut()
-                .data
-                .set(&self, &name, value)
-                .unwrap();
-            return;
-        }
-        if let Some(parent) = &self.parent {
-            parent.borrow().set_symbol(name, value)
+        if self.has_symbol(name) {
+            let data_item = self.get_mess_item();
+            if data_item.borrow().data.has(&name) {
+                data_item
+                    .borrow_mut()
+                    .data
+                    .set(&self, &name, value)
+                    .unwrap();
+                return;
+            }
+            if let Some(parent) = &self.parent {
+                parent.borrow().set_symbol(name, value)
+            } else {
+                panic!("Symbol {} not found.", name.to_string())
+            }
         } else {
-            data_item
+            self.get_mess_item()
                 .borrow_mut()
                 .data
                 .set(&self, &name, value)

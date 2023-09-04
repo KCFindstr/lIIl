@@ -1,18 +1,3 @@
-del cpu.
+del lib.
 
-mian << OvO {
-  "Hello world: " >> op@cpu.
-  make sum 0.
-  make first O.
-  loli OvO > 0 {
-    !first nara " + " >> op@cpu.
-    make first X.
-    OvO >> op@cpu.
-    maybe " + 0" >> op@cpu.
-    make sum sum + OvO.
-    make OvO OvO - 1.
-  }
-  (" = " + sum + "\n") >> op@cpu.
-}
-
-10 >> mian.
+10 >> mian@lib.

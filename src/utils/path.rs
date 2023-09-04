@@ -16,6 +16,12 @@ impl Path {
         ret
     }
 
+    pub fn parent(&self) -> Path {
+        let mut path = self.path.clone();
+        path.pop();
+        Path { path }
+    }
+
     pub fn tidy(&mut self) {
         let mut i = 0;
         while i < self.path.len() {
@@ -62,7 +68,11 @@ impl Path {
     pub fn as_std_path(&self) -> std::path::PathBuf {
         let mut path = std::path::PathBuf::new();
         for p in &self.path {
-            path.push(p);
+            if p.ends_with(":") {
+                path.push(p.to_owned() + "\\");
+            } else {
+                path.push(p);
+            }
         }
         path
     }
