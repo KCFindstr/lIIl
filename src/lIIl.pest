@@ -91,15 +91,36 @@ expr = {
     expr_prefix? ~ expr_primary ~ (expr_infix ~ expr_prefix? ~ expr_primary)*
 }
 
-expr_infix = _{ add_op | sub_op | mul_op | div_op | mod_op | member_op | node_call_op | tuple_op }
+expr_infix = _{
+  add_op
+  | sub_op
+  | mul_op
+  | div_op
+  | mod_op
+  | node_call_op
+  | neq_op
+  | leq_op
+  | geq_op
+  | less_op
+  | greater_op
+  | equal_op
+  | member_op
+  | tuple_op
+}
 add_op = { "+" }
 sub_op = { "-" }
 mul_op = { "*" }
 div_op = { "/" }
 mod_op = { "%" }
+node_call_op = { ">>" }
+neq_op = { "!=" }
+leq_op = { "<=" }
+geq_op = { ">=" }
+less_op = { "<" }
+greater_op = { ">" }
+equal_op = { "=" }
 member_op = { "@" }
 tuple_op = { "|" }
-node_call_op = { ">>" }
 expr_prefix = { pos_neg_op }
 expr_primary = {
   left_paren ~ expr ~ right_paren

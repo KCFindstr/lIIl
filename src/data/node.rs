@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::statement::{CodeExecError, Statement, Statements};
+use crate::statement::{CodeExecError, Statement};
 
 use super::{
     context::{Context, ContextRc},

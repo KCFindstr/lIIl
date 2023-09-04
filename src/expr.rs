@@ -19,6 +19,20 @@ fn expr_type_error_1(ctx: &Context, value: VarType) -> CodeExecError {
     CodeExecError::new(ctx, format!("Type error: {:?}", value))
 }
 
+fn promote_add(
+    ctx: &Context,
+    lhs: VarType,
+    rhs: VarType,
+) -> Result<(VarType, VarType), CodeExecError> {
+    if let VarType::String(_) = &lhs {
+        return Ok((lhs, VarType::String(rhs.to_string())));
+    }
+    if let VarType::String(_) = &rhs {
+        return Ok((VarType::String(lhs.to_string()), rhs));
+    }
+    promote_type(ctx, lhs, rhs)
+}
+
 fn promote_type(
     ctx: &Context,
     lhs: VarType,
@@ -43,6 +57,7 @@ pub enum Expr {
     Mul(MulExpr),
     Div(DivExpr),
     Mod(ModExpr),
+    Cmp(CompareExpr),
     Neg(NegExpr),
     Tuple(TupleExpr),
     Array(TupleExpr),
@@ -60,6 +75,7 @@ impl Debug for Expr {
             Expr::Mul(_expr) => write!(f, "MulExpr"),
             Expr::Div(_expr) => write!(f, "DivExpr"),
             Expr::Mod(_expr) => write!(f, "ModExpr"),
+            Expr::Cmp(_expr) => write!(f, "CmpExpr"),
             Expr::Neg(_expr) => write!(f, "NegExpr"),
             Expr::Tuple(_expr) => write!(f, "TupleExpr"),
             Expr::Array(_expr) => write!(f, "ArrayExpr"),
@@ -79,6 +95,7 @@ impl Expr {
             Expr::Mul(expr) => expr.eval(ctx),
             Expr::Div(expr) => expr.eval(ctx),
             Expr::Mod(expr) => expr.eval(ctx),
+            Expr::Cmp(expr) => expr.eval(ctx),
             Expr::Neg(expr) => expr.eval(ctx),
             Expr::Tuple(expr) => expr.eval(ctx),
             Expr::Array(expr) => expr.eval(ctx),
@@ -124,7 +141,7 @@ impl AddExpr {
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let vl = self.lhs.eval(ctx)?;
         let vr = self.rhs.eval(ctx)?;
-        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
+        let (lhs, rhs) = promote_add(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l + r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l + r)),
@@ -205,6 +222,51 @@ impl ModExpr {
         match (lhs, rhs) {
             (VarType::Int(l), VarType::Int(r)) => Ok(VarType::Int(l % r)),
             (VarType::Float(l), VarType::Float(r)) => Ok(VarType::Float(l % r)),
+            (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub enum CompareOp {
+    Less,
+    Greater,
+    Equal,
+    NotEqual,
+    LessEqual,
+    GreaterEqual,
+}
+
+#[derive(Clone)]
+pub struct CompareExpr {
+    pub lhs: Box<Expr>,
+    pub rhs: Box<Expr>,
+    pub op: CompareOp,
+}
+
+impl CompareExpr {
+    fn compare<T>(&self, lhs: T, rhs: T) -> Result<VarType, CodeExecError>
+    where
+        T: PartialOrd + Debug,
+    {
+        match self.op {
+            CompareOp::Less => Ok(VarType::Bool(lhs < rhs)),
+            CompareOp::Greater => Ok(VarType::Bool(lhs > rhs)),
+            CompareOp::Equal => Ok(VarType::Bool(lhs == rhs)),
+            CompareOp::NotEqual => Ok(VarType::Bool(lhs != rhs)),
+            CompareOp::LessEqual => Ok(VarType::Bool(lhs <= rhs)),
+            CompareOp::GreaterEqual => Ok(VarType::Bool(lhs >= rhs)),
+        }
+    }
+
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+        let vl = self.lhs.eval(ctx)?;
+        let vr = self.rhs.eval(ctx)?;
+        let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
+        match (lhs, rhs) {
+            (VarType::Int(l), VarType::Int(r)) => self.compare(l, r),
+            (VarType::Float(l), VarType::Float(r)) => self.compare(l, r),
+            (VarType::String(l), VarType::String(r)) => self.compare(l, r),
             (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }

@@ -3,15 +3,13 @@ del cpu.
 mian << OvO {
   "Hello world: " >> op@cpu.
   make sum 0.
-  loli OvO {
+  loli OvO > 0 {
     OvO >> op@cpu.
-    OvO - 1 nara " + " >> op@cpu.
+    OvO > 1 nara " + " >> op@cpu.
     make sum sum + OvO.
     make OvO OvO - 1.
   }
-  " = " >> op@cpu.
-  sum >> op@cpu.
-  "\n" >> op@cpu.
+  (" = " + sum + "\n") >> op@cpu.
 }
 
 10 >> mian.

@@ -7,8 +7,8 @@ use pest::{
 use crate::{
     data::lvalue::LValue,
     expr::{
-        AddExpr, DivExpr, Expr, IdentifierExpr, MemberExpr, ModExpr, MulExpr, NegExpr,
-        NodeCallExpr, SubExpr, TupleExpr,
+        AddExpr, CompareExpr, CompareOp, DivExpr, Expr, IdentifierExpr, MemberExpr, ModExpr,
+        MulExpr, NegExpr, NodeCallExpr, SubExpr, TupleExpr,
     },
     statement::CodeExecError,
 };
@@ -18,6 +18,12 @@ use super::{literal::parse_literal, Rule};
 static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
     PrattParser::new()
         .op(Op::infix(Rule::tuple_op, Assoc::Left))
+        .op(Op::infix(Rule::greater_op, Assoc::Left)
+            | Op::infix(Rule::geq_op, Assoc::Left)
+            | Op::infix(Rule::less_op, Assoc::Left)
+            | Op::infix(Rule::leq_op, Assoc::Left)
+            | Op::infix(Rule::equal_op, Assoc::Left)
+            | Op::infix(Rule::neq_op, Assoc::Left))
         .op(Op::infix(Rule::add_op, Assoc::Left) | Op::infix(Rule::sub_op, Assoc::Left))
         .op(Op::infix(Rule::mul_op, Assoc::Left)
             | Op::infix(Rule::div_op, Assoc::Left)
@@ -98,6 +104,36 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
             Rule::mod_op => Expr::Mod(ModExpr {
                 lhs: Box::new(lhs),
                 rhs: Box::new(rhs),
+            }),
+            Rule::less_op => Expr::Cmp(CompareExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op: CompareOp::Less,
+            }),
+            Rule::leq_op => Expr::Cmp(CompareExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op: CompareOp::LessEqual,
+            }),
+            Rule::greater_op => Expr::Cmp(CompareExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op: CompareOp::Greater,
+            }),
+            Rule::geq_op => Expr::Cmp(CompareExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op: CompareOp::GreaterEqual,
+            }),
+            Rule::equal_op => Expr::Cmp(CompareExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op: CompareOp::Equal,
+            }),
+            Rule::neq_op => Expr::Cmp(CompareExpr {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op: CompareOp::NotEqual,
             }),
             Rule::member_op => Expr::Member(MemberExpr {
                 lhs: Box::new(lhs),
