@@ -7,13 +7,14 @@ use crate::{
 };
 
 use self::{
-    ass::AssStatement, if_stmt::IfStatement, loli::LoliStatement, node_def::NodeDefStatement,
-    rm::RmStatement,
+    ass::AssStatement, if_stmt::IfStatement, loli::LoliStatement, maybe::MaybeStatement,
+    node_def::NodeDefStatement, rm::RmStatement,
 };
 
 pub mod ass;
 pub mod if_stmt;
 pub mod loli;
+pub mod maybe;
 pub mod node_def;
 pub mod rm;
 
@@ -43,6 +44,7 @@ pub enum Statement {
     Expr(ExprStatement),
     If(IfStatement),
     Loli(LoliStatement),
+    Maybe(MaybeStatement),
     NodeDef(NodeDefStatement),
     Stmts(Statements),
 }
@@ -55,6 +57,7 @@ impl Statement {
             Statement::Expr(stmt) => stmt.exec(ctx),
             Statement::If(stmt) => stmt.exec(ctx),
             Statement::Loli(stmt) => stmt.exec(ctx),
+            Statement::Maybe(stmt) => stmt.exec(ctx),
             Statement::NodeDef(stmt) => stmt.exec(ctx),
             Statement::Stmts(stmt) => stmt.exec(ctx),
         }

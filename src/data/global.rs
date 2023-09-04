@@ -44,6 +44,10 @@ impl GlobalData {
         self.variables.get(&id).and_then(|v| Some(v.clone()))
     }
 
+    pub fn max_id(&self) -> i64 {
+        self.next_id - 1
+    }
+
     fn next_id(&mut self) -> i64 {
         let id = self.next_id;
         self.next_id += 1;

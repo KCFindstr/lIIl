@@ -4,8 +4,9 @@ use crate::{
     module::CodeModule,
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
-        ass::AssStatement, if_stmt::IfStatement, loli::LoliStatement, node_def::NodeDefStatement,
-        rm::RmStatement, CodeExecError, ExprStatement, Statement, Statements,
+        ass::AssStatement, if_stmt::IfStatement, loli::LoliStatement, maybe::MaybeStatement,
+        node_def::NodeDefStatement, rm::RmStatement, CodeExecError, ExprStatement, Statement,
+        Statements,
     },
 };
 
@@ -74,13 +75,30 @@ fn parse_loli(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<LoliStateme
         match pair.as_rule() {
             Rule::expr => cond = Some(parse_expr(pair.into_inner())),
             Rule::stmt => body = Some(parse_stmt(module, pair.into_inner())?),
-            _ => panic!("parse_ass: {:?}", pair),
+            _ => panic!("parse_loli: {:?}", pair),
         }
     }
     Ok(LoliStatement {
         cond: cond.unwrap(),
         body: Box::new(body.unwrap()),
     })
+}
+
+fn parse_maybe(
+    module: &mut CodeModule,
+    pairs: Pairs<Rule>,
+) -> Result<MaybeStatement, CodeExecError> {
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::stmt => {
+                return Ok(MaybeStatement {
+                    body: Box::new(parse_stmt(module, pair.into_inner())?),
+                })
+            }
+            _ => panic!("parse_maybe: {:?}", pair),
+        }
+    }
+    panic!("parse_maybe: Reached end of input")
 }
 
 fn parse_node_def(
@@ -122,6 +140,9 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
                 )?))
             }
             Rule::if_stmt => return Ok(Statement::If(parse_if(module, pair.into_inner())?)),
+            Rule::maybe_stmt => {
+                return Ok(Statement::Maybe(parse_maybe(module, pair.into_inner())?))
+            }
             Rule::loli_stmt => return Ok(Statement::Loli(parse_loli(module, pair.into_inner())?)),
             Rule::stmt_block => {
                 return Ok(Statement::Stmts(parse_stmt_block(

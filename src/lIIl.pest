@@ -23,8 +23,6 @@ left_bracket = _{ "[" }
 
 right_bracket = _{ "]" }
 
-pos_neg_op = { "+" | "-" }
-
 escape = @{ "\\" ~ ("\"" | "\\" | "r" | "n" | "t" | "0" | "'" | NEWLINE) }
 
 identifier = @{ XID_START ~ XID_CONTINUE* }
@@ -43,6 +41,7 @@ stmt = {
   | node_def_stmt
   | if_stmt
   | loli_stmt
+  | maybe_stmt
   | stmt_block
 }
 
@@ -78,10 +77,14 @@ if_stmt = { expr ~ if_stmt_suffix ~ stmt }
 if_stmt_suffix = _{ "tara" | "たら" | "nara" | "なら" }
 
 /// loli stmt.
-
 loli_stmt = { loli_stmt_prefix ~ expr ~ stmt }
 
 loli_stmt_prefix = _{ "loli " }
+
+/// maybe stmt.
+maybe_stmt = { maybe_stmt_prefix ~ stmt }
+
+maybe_stmt_prefix = _{ "maybe " }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Expressions
@@ -121,7 +124,11 @@ greater_op = { ">" }
 equal_op = { "=" }
 member_op = { "@" }
 tuple_op = { "|" }
-expr_prefix = { pos_neg_op }
+
+not_op = { "!" }
+pos_neg_op = { "+" | "-" }
+expr_prefix = _{ pos_neg_op | not_op }
+
 expr_primary = {
   left_paren ~ expr ~ right_paren
   | literal_expr

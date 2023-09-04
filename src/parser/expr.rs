@@ -8,7 +8,7 @@ use crate::{
     data::lvalue::LValue,
     expr::{
         AddExpr, CompareExpr, CompareOp, DivExpr, Expr, IdentifierExpr, MemberExpr, ModExpr,
-        MulExpr, NegExpr, NodeCallExpr, SubExpr, TupleExpr,
+        MulExpr, NegExpr, NodeCallExpr, NotExpr, SubExpr, TupleExpr,
     },
     statement::CodeExecError,
 };
@@ -28,7 +28,7 @@ static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
         .op(Op::infix(Rule::mul_op, Assoc::Left)
             | Op::infix(Rule::div_op, Assoc::Left)
             | Op::infix(Rule::mod_op, Assoc::Left))
-        .op(Op::prefix(Rule::pos_neg_op))
+        .op(Op::prefix(Rule::pos_neg_op) | Op::prefix(Rule::not_op))
         .op(Op::infix(Rule::node_call_op, Assoc::Left))
         .op(Op::infix(Rule::member_op, Assoc::Right))
 });
@@ -82,6 +82,9 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
                     rhs
                 }
             }
+            Rule::not_op => Expr::Not(NotExpr {
+                value: Box::new(rhs),
+            }),
             _ => panic!("parse_expr (prefix): {:?}", op),
         })
         .map_infix(|mut lhs, op, rhs| match op.as_rule() {

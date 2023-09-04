@@ -1,5 +1,7 @@
 use std::{fmt::Debug, mem};
 
+use rand::Rng;
+
 use crate::{
     data::context::Context,
     data::{
@@ -58,6 +60,7 @@ pub enum Expr {
     Div(DivExpr),
     Mod(ModExpr),
     Cmp(CompareExpr),
+    Not(NotExpr),
     Neg(NegExpr),
     Tuple(TupleExpr),
     Array(TupleExpr),
@@ -76,6 +79,7 @@ impl Debug for Expr {
             Expr::Div(_expr) => write!(f, "DivExpr"),
             Expr::Mod(_expr) => write!(f, "ModExpr"),
             Expr::Cmp(_expr) => write!(f, "CmpExpr"),
+            Expr::Not(_expr) => write!(f, "NotExpr"),
             Expr::Neg(_expr) => write!(f, "NegExpr"),
             Expr::Tuple(_expr) => write!(f, "TupleExpr"),
             Expr::Array(_expr) => write!(f, "ArrayExpr"),
@@ -96,6 +100,7 @@ impl Expr {
             Expr::Div(expr) => expr.eval(ctx),
             Expr::Mod(expr) => expr.eval(ctx),
             Expr::Cmp(expr) => expr.eval(ctx),
+            Expr::Not(expr) => expr.eval(ctx),
             Expr::Neg(expr) => expr.eval(ctx),
             Expr::Tuple(expr) => expr.eval(ctx),
             Expr::Array(expr) => expr.eval(ctx),
@@ -283,6 +288,50 @@ impl NegExpr {
         match value {
             VarType::Int(value) => Ok(VarType::Int(-value)),
             VarType::Float(value) => Ok(VarType::Float(-value)),
+            _ => Err(expr_type_error_1(&ctx.borrow(), value)),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct NotExpr {
+    pub value: Box<Expr>,
+}
+
+impl NotExpr {
+    fn sample_int(value: i64) -> i64 {
+        let mut rng = rand::thread_rng();
+        loop {
+            let sample = rng.gen_range(i64::MIN..=i64::MAX);
+            if sample != value {
+                return sample;
+            }
+        }
+    }
+    fn sample_float(value: f64) -> f64 {
+        let mut rng = rand::thread_rng();
+        loop {
+            let sample = rng.gen_range(f64::MIN..=f64::MAX);
+            if sample != value {
+                return sample;
+            }
+        }
+    }
+    fn sample_ref(ctx: &ContextRc) -> i64 {
+        let global = ctx.borrow().get_global();
+        let borrowed_global = global.borrow();
+        let max_id = borrowed_global.data.max_id();
+        return rand::thread_rng().gen_range(0..=max_id);
+    }
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+        let value = self.value.eval(ctx)?;
+        match value {
+            VarType::Int(value) => Ok(VarType::Int(Self::sample_int(value))),
+            VarType::Float(value) => Ok(VarType::Float(Self::sample_float(value))),
+            VarType::String(value) => Ok(VarType::String("!".to_owned() + &value)),
+            VarType::Bool(value) => Ok(VarType::Bool(!value)),
+            VarType::Ref(_) => Ok(VarType::Nzero),
+            VarType::Nzero => Ok(VarType::Ref(Self::sample_ref(ctx))),
             _ => Err(expr_type_error_1(&ctx.borrow(), value)),
         }
     }
