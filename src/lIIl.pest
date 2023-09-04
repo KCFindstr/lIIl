@@ -39,10 +39,10 @@ module = { SOI ~ stmt* ~ EOI }
 stmt = {
   ((rm_stmt
     | ass_stmt
-    | loli_stmt
     | expr)? ~ stmt_end)
   | node_def_stmt
   | if_stmt
+  | loli_stmt
   | stmt_block
 }
 
@@ -54,14 +54,14 @@ stmt_end = _{ "." }
 /// rm stmt.
 package_name = @{ identifier ~ ("/" ~ identifier)* }
 
-rm_stmt_prefix = _{ "rm" | "del" }
+rm_stmt_prefix = _{ "rm " | "del " }
 
-rm_stmt = ${ rm_stmt_prefix ~ WHITESPACE+ ~ package_name }
+rm_stmt = { rm_stmt_prefix ~ package_name }
 
 /// ass stmt.
-ass_stmt_prefix = _{ "make" | "mk" }
+ass_stmt_prefix = _{ "make " | "mk " }
 
-ass_stmt = ${ ass_stmt_prefix ~ WHITESPACE+ ~ lvalue ~ WHITESPACE+ ~ expr}
+ass_stmt = { ass_stmt_prefix ~ lvalue ~ expr}
 
 lvalue = { identifier | expr }
 
@@ -81,7 +81,7 @@ if_stmt_suffix = _{ "tara" | "たら" | "nara" | "なら" }
 
 loli_stmt = { loli_stmt_prefix ~ expr ~ stmt }
 
-loli_stmt_prefix = _{ "loli" }
+loli_stmt_prefix = _{ "loli " }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Expressions
