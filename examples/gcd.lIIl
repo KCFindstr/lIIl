@@ -1,0 +1,3 @@
+gcd << a | b {
+    b = 0 nara lose a
+}

@@ -1,0 +1,5 @@
+rm cpu.
+
+(!1) >> wcop@cpu.
+(!1,0) >> wcop@cpu.
+(!"Frenqy") >> wcop@cpu.

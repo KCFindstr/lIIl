@@ -311,7 +311,7 @@ impl NotExpr {
     fn sample_float(value: f64) -> f64 {
         let mut rng = rand::thread_rng();
         loop {
-            let sample = rng.gen_range(f64::MIN..=f64::MAX);
+            let sample = rng.gen_range(0.0..1.0);
             if sample != value {
                 return sample;
             }

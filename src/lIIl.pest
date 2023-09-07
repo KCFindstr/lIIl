@@ -138,8 +138,8 @@ expr_primary = {
 /// Literal expression
 literal_expr = {
   string_literal
-  | int_literal
   | float_literal
+  | int_literal
   | bool_literal
   | nzero_literal
   | array_literal
