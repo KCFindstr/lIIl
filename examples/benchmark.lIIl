@@ -4,6 +4,6 @@ make sum 0.
 make i 0.
 loli i < 10000000 {
     make sum sum + i.
-    make i i + 1.
+    make i > i.
 }
 ("Sum = " + sum) >> op@cpu.

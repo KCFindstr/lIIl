@@ -40,6 +40,12 @@ mian << OvO {
 10 >> mian.
 ```
 
+The expected output is:
+
+```
+Hello world: 10 + 9 + 8 + 7 + 6 + 5 + 4 + 3 + 2 + 1 = 55
+```
+
 Let's dig into this line by line.
 
 ```lIIl

@@ -66,7 +66,7 @@ impl Path {
     }
 
     pub fn as_std_path(&self) -> std::path::PathBuf {
-        let mut path = std::path::PathBuf::new();
+        let mut path = std::path::PathBuf::from("/");
         for p in &self.path {
             if p.ends_with(":") {
                 path.push(p.to_owned() + "\\");
