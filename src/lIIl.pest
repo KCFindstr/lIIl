@@ -156,10 +156,10 @@ char_in_single = { escape | (!(single_quote | "\\" | NEWLINE) ~ ANY) }
 
 int_literal = @{ ASCII_DIGIT+ }
 
-float_literal = @{ ASCII_DIGIT+ ~ "," ~ ASCII_DIGIT* }
+float_literal = @{ ASCII_DIGIT+ ~ "." ~ ASCII_DIGIT* }
 
-bool_literal = { ("O" | "X") ~ !XID_CONTINUE }
+bool_literal = @{ ("O" | "X") ~ !XID_CONTINUE }
 
-nzero_literal = { ("N0" | "Nzero") ~ !XID_CONTINUE }
+nzero_literal = @{ ("N0" | "Nzero") ~ !XID_CONTINUE }
 
 array_literal = { left_bracket ~ expr ~ right_bracket }

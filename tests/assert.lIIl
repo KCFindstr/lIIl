@@ -1,0 +1,4 @@
+del ut.
+
+O | "Failed to assert O." >> assert@ut.
+!X | "Failed to assert !X." >> assert@ut.

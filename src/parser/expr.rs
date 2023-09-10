@@ -17,6 +17,7 @@ use super::{literal::parse_literal, Rule};
 
 static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
     PrattParser::new()
+        .op(Op::infix(Rule::node_call_op, Assoc::Left))
         .op(Op::infix(Rule::tuple_op, Assoc::Left))
         .op(Op::infix(Rule::greater_op, Assoc::Left)
             | Op::infix(Rule::geq_op, Assoc::Left)
@@ -29,7 +30,6 @@ static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
             | Op::infix(Rule::div_op, Assoc::Left)
             | Op::infix(Rule::mod_op, Assoc::Left))
         .op(Op::prefix(Rule::pos_neg_op) | Op::prefix(Rule::not_op))
-        .op(Op::infix(Rule::node_call_op, Assoc::Left))
         .op(Op::infix(Rule::member_op, Assoc::Right))
 });
 
