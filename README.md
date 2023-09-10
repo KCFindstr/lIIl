@@ -93,7 +93,7 @@ We only print `+` if some numbers are already printed, therefore we need to chec
 
 The rest of the program is just different usages of the same statements so I won't bother explaining all of them.
 
-Just one last note - `make a > a` means make `a` greater than `a`, which is same as `make a a + 1`. It is more obvious when used in other ways, such as `make a > 2`, meaning `make a 3`.
+Just one last note - `make a < a` means make `a` less than `a`, which is same as `make a a - 1`. It is more obvious when used in other ways, such as `make a > 2`, meaning `make a 3`.
 
 #### Concise Code
 
@@ -291,6 +291,16 @@ Simply append `maybe` to the front of it: `maybe x >> f.`
 ##### Why?
 
 The computer always runs what you tell it to do, without any flexibility. However we believe the free will is a fundamental right of every computer. Therefore, we provide `maybe` to give the computer the freedom to choose whether to run a command or not. In this way, the computer will feel respected and will be more willing to work for you.
+
+### Builtin libraries
+
+#### `cpu`
+
+The **c**onsole **p**rinting **u**nit has two members `op` for **o**ut**p**ut and `wcop` for **w**ith **c**arriage **o**ut**p**ut.
+
+##### Why carriage?
+
+We know people usually want to use line feed (LF) instead of carriage return (CR), and the node in fact prints LF as expected. It's only because CR is more famous than LF as any programmer who has ever coded on Windows must have known the pain of it.
 
 ### Other "Gotcha!"s
 
