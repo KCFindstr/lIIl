@@ -1,15 +1,15 @@
 del cpu.
 
-mian << OvO {
+mian << a {
   "Hello world: " >> op@cpu.
   make sum 0.
   make first O.
-  loli OvO > 0 {
+  loli a > 0 {
     !first nara " + " >> op@cpu.
     make first X.
-    OvO >> op@cpu.
-    make sum sum + OvO.
-    make OvO < OvO.
+    a >> op@cpu.
+    make sum sum + a.
+    make a < a.
   }
   (" = " + sum + "\n") >> op@cpu.
 }
