@@ -245,7 +245,7 @@ You can also use `tara`, `なら`, `たら` in place of `nara`.
 
 ##### Why?
 
-`nara` is very intuitive to use since we can put the condition before the statement, which is the opposite of `if` in many other languages. If we use `if`, you have to skim through the whole statement to find the condition, which is extremely inconvenient. Now you only have to read through the whole statement to find `nara`.
+`nara` is very intuitive to use since we can put the condition before the statement, which is the opposite of `if` in many other languages. If we use `if`, you have to skim through the whole statement to find the condition, which is extremely inconvenient. Now you only have to skim through the whole statement to find `nara`.
 
 #### Looping
 
@@ -267,7 +267,7 @@ f << a {
 (1 >> f) >> op@cpu.
 ```
 
-Here, `f` is defined as a node that receives `a` and ou tputs `a + 1`. `>>` is used to send input to the node, and we are passing the output of `f` to `op@cpu` to print it.
+Here, `f` is defined as a node that receives `a` and ou tputs `a + 1`. `>>` is used to send input to the node, and we are passing the output of `f` to `op@cpu` to print it. `(°∀°)ﾉ` is just an illustration that the node is happy as it finishes its job, and is throwing the output back to you.
 
 Node can also receive a tuple as input:
 
@@ -280,7 +280,7 @@ gcd << a | b {
 
 ##### Why?
 
-`<<` is a left arrow indicating the direction of the input, and you can visually describe it as "node ` gcd` waiting for `a` and `b` to _flow_ into it". When sending input to it, we reverse the direction of the arrow to`>>` so people can easily tell `a` and `b` are _flowing_ into the node `gcd`.
+`<<` is a left arrow indicating the direction of the input, and you can visually describe it as "node `gcd` waiting for `a` and `b` to _flow_ into it". When sending input to it, we reverse the direction of the arrow to`>>` so people can easily tell `a` and `b` are _flowing_ into the node `gcd`.
 
 If you really, really don't like typing `(°∀°)ﾉ`, you can use `=>` as a compromise.
 
@@ -321,6 +321,14 @@ that >> another_function@another_module.
 ##### Why?
 
 It is difficult to name variables, especially when it comes from a very complicated function that has many predicates and conditions. You don't want to name a variable `waxedLightlyWeatheredCutCopperStairs` since it easily takes up the entire line and turns your code into a mess. Therefore, we provide `that` so that you don't need to name variables if you don't want to. Just refer to it as `that` and it may or may not work. At least you're happy because you saved a lot of time and trouble.
+
+### Learn more about lIIl
+
+Please read the code examples in `examples/` and `tests/`. If you have any questions, please open an issue and we will be happy to answer.
+
+## Use lIIl in production
+
+Is your boss really that mean to you?
 
 ## Contributing
 
