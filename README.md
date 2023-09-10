@@ -12,7 +12,7 @@ lIIl is a programming language that is designed to be intuitive and easy to use.
 
 #### Exceptional Performance
 
-We have verified that lIIl's performance is much more remarkable than other commonly used languages, such as POOOOn, JOOa, O++, etc. (censored to avoid hate from their crazy fans)
+I have verified that lIIl's performance is much more remarkable than other commonly used languages, such as POOOOn, JOOa, O++, etc. (censored to avoid hate from their crazy fans)
 
 <img src="dev/images/performance_benchmark.png" width="600">
 
@@ -334,7 +334,7 @@ It is difficult to name variables, especially when it comes from a very complica
 
 ### Learn more about lIIl
 
-Please read the code examples in `examples/` and `tests/`. If you have any questions, please open an issue and we will be happy to answer.
+Please read the code examples in `examples/` and `tests/`. If you have any questions, please open an issue and I will be happy to answer.
 
 ## Use lIIl in production
 
