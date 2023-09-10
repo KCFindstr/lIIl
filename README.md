@@ -310,7 +310,7 @@ The `not` operator is very counter-intuitive in many languages. For example, `!2
 
 #### `this` or `that`
 
-`this` is a keyword in many object oriented languages. It usually refers to the class instance that the code is executing on. In contrast, `that` is a keyword in lIIl that refers to thing that you might want to use.
+`this` is a keyword in many object oriented languages. It usually refers to the class instance that the code is executing on. In contrast, `that` is a keyword in lIIl that refers to the thing that you might want to use.
 
 ```
 some | tedious | input >> function@with_a_long_name@from_some_random_module.
