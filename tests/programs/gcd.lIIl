@@ -1,0 +1,11 @@
+rm ut.
+
+gcd << a | b {
+    b = 0 nara => a.
+    => b | a % b >> gcd.
+}
+
+(60 | 96 >> gcd) = 12 >> assert@ut.
+(0 | 0 >> gcd) = 0 >> assert@ut.
+(121 | 139 >> gcd) = 1 >> assert@ut.
+(100000 | 10 >> gcd) = 10 >> assert@ut.

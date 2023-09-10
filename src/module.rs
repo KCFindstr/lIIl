@@ -8,6 +8,7 @@ use crate::{
     utils::path::Path,
 };
 pub mod cpu;
+pub mod test;
 
 pub enum Module {
     Code(CodeModule),

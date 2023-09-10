@@ -1,19 +1,16 @@
 use pest::iterators::Pairs;
 
 use crate::{
-    data::lvalue::LValue,
     module::CodeModule,
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
-        ass::AssStatement, if_stmt::IfStatement, loli::LoliStatement, maybe::MaybeStatement,
-        node_def::NodeDefStatement, ret::ReturnStatement, rm::RmStatement, CodeExecError,
-        Statement, Statements,
+        ass::AssStatement, expr::ExprStatement, if_stmt::IfStatement, loli::LoliStatement,
+        maybe::MaybeStatement, node_def::NodeDefStatement, ret::ReturnStatement, rm::RmStatement,
+        CodeExecError, Statement, Statements,
     },
 };
 
 use super::{expr::parse_expr, Rule};
-
-const _THAT: &'static str = "that";
 
 fn parse_stmt_block(
     module: &mut CodeModule,
@@ -146,9 +143,8 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
             Rule::rm_stmt => return Ok(Statement::Rm(parse_rm(module, pair.into_inner())?)),
             Rule::ass_stmt => return Ok(Statement::Ass(parse_ass(pair.into_inner())?)),
             Rule::expr => {
-                return Ok(Statement::Ass(AssStatement {
-                    lhs: LValue::Identifier(_THAT.to_owned()),
-                    rhs: parse_expr(pair.into_inner()),
+                return Ok(Statement::Expr(ExprStatement {
+                    value: parse_expr(pair.into_inner()),
                 }))
             }
             Rule::node_def_stmt => {

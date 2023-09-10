@@ -1,0 +1,8 @@
+rm ut.
+
+!1 != 1 >> assert@ut.
+!0.5 != 0.5 >> assert@ut.
+!"Frenqy" = "!Frenqy" >> assert@ut.
+!X = O >> assert@ut.
+!O = X >> assert@ut.
+!N0 >> assert@ut.

@@ -268,6 +268,7 @@ impl CompareExpr {
         let vr = self.rhs.eval(ctx)?;
         let (lhs, rhs) = promote_type(&ctx.borrow(), vl, vr)?;
         match (lhs, rhs) {
+            (VarType::Bool(l), VarType::Bool(r)) => self.compare(l, r),
             (VarType::Int(l), VarType::Int(r)) => self.compare(l, r),
             (VarType::Float(l), VarType::Float(r)) => self.compare(l, r),
             (VarType::String(l), VarType::String(r)) => self.compare(l, r),
