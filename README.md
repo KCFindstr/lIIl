@@ -238,7 +238,7 @@ This is a nihility type.
 
 ##### Why?
 
-Some language use `None` for this type, which is a very confusing name. `N` is fine since we often use `N` in `Yes/No` questions and people can easily tell `N` has negative implications. However, the latter part is problematic. `one` natually evaluates to `true` in many languages, and we can hardly tell whether this strange combination of `N` and `one` means yes or no. Is it Schrödinger's Cat? You can only tell by running the code. `Nzero` is a much better name since it is a combination of `N` and `zero`, which is obviously negative. `N0` is also recognized as `Nzero` in lIIl.
+Some language use `None` for this type, which is a very confusing name. `N` is fine since we often use `N` in `Yes/No` questions and people can easily tell `N` has negative implications. However, the latter part is problematic. `one` natually evaluates to `true` in many languages, and we can hardly tell whether this strange combination of `N` and `one` means yes or no. Is it Schrödinger's Cat? You can only tell by running the code. `Nzero` is a much better name since it is a combination of `N` and `zero`, which is obviously negative. `N0` is an alias for `Nzero` in lIIl.
 
 ### Syntax
 
