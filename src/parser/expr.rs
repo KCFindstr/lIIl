@@ -143,7 +143,7 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
                 rhs: Box::new(rhs),
             }),
             Rule::node_call_op => Expr::NodeCall(NodeCallExpr {
-                node_name: Box::new(rhs),
+                node: Box::new(rhs),
                 args: Box::new(lhs),
             }),
             Rule::tuple_op => {

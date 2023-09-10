@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::statement::CodeExecError;
 
@@ -10,8 +10,13 @@ pub enum MemData {
     Array(Array),
     Node(Node),
 }
+pub type MemDataRc = Rc<RefCell<MemData>>;
 
 impl MemData {
+    pub fn new_rc(data: MemData) -> MemDataRc {
+        Rc::new(RefCell::new(data))
+    }
+
     pub fn set(&mut self, ctx: &Context, key: &str, val: VarType) -> Result<(), CodeExecError> {
         match self {
             MemData::Mess(mess) => Ok(mess.set(key, val)),

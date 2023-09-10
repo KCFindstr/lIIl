@@ -19,8 +19,8 @@ impl NodeDefStatement {
         let mut code_node = CodeNode::new(ctx, self.body.clone());
         code_node.args = self.args.clone();
         let node = Node::Code(code_node);
-        let var = ctx.borrow().add_mem(MemData::Node(node));
-        ctx.borrow().set_symbol(&self.name, var);
+        let var = MemData::new_rc(MemData::Node(node));
+        ctx.borrow().set_symbol(&self.name, VarType::Ref(var));
         Ok(None)
     }
 }

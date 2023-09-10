@@ -1,6 +1,6 @@
 use std::fmt::{self, Debug};
 
-use super::data::Array;
+use super::data::{Array, MemDataRc};
 
 #[derive(Clone, Default)]
 pub enum VarType {
@@ -11,7 +11,7 @@ pub enum VarType {
     Float(f64),
     String(String),
     Tuple(Array),
-    Ref(i64),
+    Ref(MemDataRc),
 }
 
 impl Debug for VarType {
@@ -23,7 +23,7 @@ impl Debug for VarType {
             VarType::Float(val) => write!(f, "Float({})", val),
             VarType::String(val) => write!(f, "String({})", val),
             VarType::Tuple(val) => write!(f, "Tuple({:?})", val),
-            VarType::Ref(val) => write!(f, "Ref({})", val),
+            VarType::Ref(val) => write!(f, "Ref({:?})", val.borrow()),
         }
     }
 }
@@ -37,7 +37,7 @@ impl ToString for VarType {
             VarType::Float(val) => format!("{}", val),
             VarType::String(val) => format!("{}", val),
             VarType::Tuple(val) => format!("{:?}", val),
-            VarType::Ref(val) => format!("{}", val),
+            VarType::Ref(val) => format!("{:?}", val.borrow()),
         }
     }
 }
@@ -51,7 +51,7 @@ impl Into<bool> for VarType {
             VarType::Float(val) => val != 0.0,
             VarType::String(val) => val != "",
             VarType::Tuple(val) => val.len() != 0,
-            VarType::Ref(val) => val != 0,
+            VarType::Ref(val) => true,
         }
     }
 }

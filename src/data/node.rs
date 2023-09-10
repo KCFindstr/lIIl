@@ -106,6 +106,6 @@ impl NativeNode {
 
     pub fn as_vartype(parent: &ContextRc, func: NativeFunc) -> VarType {
         let node = MemData::Node(Node::Native(NativeNode::new(parent, func)));
-        parent.borrow().add_mem(node)
+        VarType::Ref(MemData::new_rc(node))
     }
 }

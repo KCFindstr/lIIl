@@ -10,7 +10,7 @@ lIIl is a programming language that is designed to be intuitive and easy to use.
 
 #### Exceptional Performance
 
-We have verified that lIIl's performance is much more remarkable than other commonly used languages, such as POOOOn, JOOa, O++, etc. (censored to avoid hate from their crazy fans) Have to make this chart in log scale since the second place is so far behind lIIl.
+We have verified that lIIl's performance is much more remarkable than other commonly used languages, such as POOOOn, JOOa, O++, etc. (censored to avoid hate from their crazy fans)
 
 <img src="dev/images/performance_benchmark.png" width="600">
 

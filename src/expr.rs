@@ -6,8 +6,7 @@ use crate::{
     data::context::Context,
     data::{
         context::ContextRc,
-        data::{Array, MemData},
-        global::DataItemRc,
+        data::{Array, MemData, MemDataRc},
         variable::VarType,
     },
     statement::CodeExecError,
@@ -317,11 +316,8 @@ impl NotExpr {
             }
         }
     }
-    fn sample_ref(ctx: &ContextRc) -> i64 {
-        let global = ctx.borrow().get_global();
-        let borrowed_global = global.borrow();
-        let max_id = borrowed_global.data.max_id();
-        return rand::thread_rng().gen_range(0..=max_id);
+    fn sample_ref() -> i64 {
+        Self::sample_int(0)
     }
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let value = self.value.eval(ctx)?;
@@ -331,7 +327,7 @@ impl NotExpr {
             VarType::String(value) => Ok(VarType::String("!".to_owned() + &value)),
             VarType::Bool(value) => Ok(VarType::Bool(!value)),
             VarType::Ref(_) => Ok(VarType::Nzero),
-            VarType::Nzero => Ok(VarType::Ref(Self::sample_ref(ctx))),
+            VarType::Nzero => Ok(VarType::Int(Self::sample_ref())),
             _ => Err(expr_type_error_1(&ctx.borrow(), value)),
         }
     }
@@ -359,18 +355,10 @@ pub struct MemberExpr {
 }
 
 impl MemberExpr {
-    fn get_data(&self, ctx: &ContextRc) -> Result<DataItemRc, CodeExecError> {
+    fn get_data(&self, ctx: &ContextRc) -> Result<MemDataRc, CodeExecError> {
         let parent = self.rhs.eval(ctx)?;
-        if let VarType::Ref(id) = parent {
-            let data = ctx.borrow().get_mem_by_ref(id);
-            if let Some(data) = data {
-                Ok(data)
-            } else {
-                Err(CodeExecError::new(
-                    &ctx.borrow(),
-                    format!("Ref {:?} not found", id),
-                ))
-            }
+        if let VarType::Ref(data) = parent {
+            Ok(data)
         } else {
             Err(CodeExecError::new(
                 &ctx.borrow(),
@@ -403,57 +391,46 @@ impl MemberExpr {
         let key = self.get_key(ctx)?;
         let data = self.get_data(ctx)?;
         let borrowed_data = data.borrow();
-        Ok(borrowed_data.data.get(&key))
+        Ok(borrowed_data.get(&key))
     }
 
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {
         let key = self.get_key(ctx)?;
         let data = self.get_data(ctx)?;
         let mut borrowed_data = data.borrow_mut();
-        borrowed_data.data.set(&ctx.borrow(), &key, val)
+        borrowed_data.set(&ctx.borrow(), &key, val)
     }
 }
 
 #[derive(Clone)]
 pub struct NodeCallExpr {
-    pub node_name: Box<Expr>,
+    pub node: Box<Expr>,
     pub args: Box<Expr>,
 }
 
 impl NodeCallExpr {
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
-        let node_name = self.node_name.eval(ctx)?;
+        let node = self.node.eval(ctx)?;
         let args = self.args.eval(ctx)?;
-        if let VarType::Ref(id) = node_name {
-            let data_item = ctx.borrow().get_mem_by_ref(id);
-            if let Some(mem) = data_item {
-                let mut node;
-                {
-                    let data = &mem.borrow_mut().data;
-                    node = if let MemData::Node(node) = data {
-                        node.clone()
-                    } else {
-                        return Err(CodeExecError::new(
-                            &ctx.borrow(),
-                            format!("Expected node, got {:?}", mem),
-                        ));
-                    };
-                }
-                if let VarType::Tuple(args_tuple) = args {
-                    node.exec(&args_tuple.items)
-                } else {
-                    node.exec(&vec![args])
-                }
+        if let VarType::Ref(data) = node {
+            let mut node_copy;
+            if let MemData::Node(node) = &*data.borrow() {
+                node_copy = node.clone();
             } else {
-                Err(CodeExecError::new(
+                return Err(CodeExecError::new(
                     &ctx.borrow(),
-                    format!("Cannot find node {:?}", node_name),
-                ))
+                    format!("Expected node, got {:?}", data),
+                ));
+            }
+            if let VarType::Tuple(args_tuple) = args {
+                node_copy.exec(&args_tuple.items)
+            } else {
+                node_copy.exec(&vec![args])
             }
         } else {
             Err(CodeExecError::new(
                 &ctx.borrow(),
-                format!("Cannot call non-node {:?}", node_name),
+                format!("Cannot call non-node {:?}", node),
             ))
         }
     }

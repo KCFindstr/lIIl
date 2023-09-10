@@ -3,8 +3,8 @@ use std::{cell::RefCell, rc::Rc};
 use crate::statement::CodeExecError;
 
 use super::{
-    data::{MemData, Mess},
-    global::{DataItemRc, Global},
+    data::{MemData, MemDataRc, Mess},
+    global::Global,
     variable::VarType,
 };
 
@@ -14,28 +14,28 @@ pub type GlobalRc = Rc<RefCell<Global>>;
 pub struct Context {
     global: GlobalRc,
     parent: Option<ContextRc>,
-    messId: i64,
+    mess: MemDataRc,
 }
 
 impl Context {
     pub fn new(parent: &ContextRc) -> Self {
         let global = parent.borrow().global.clone();
-        let messId = global.borrow_mut().data.add(MemData::Mess(Mess::new()));
+        let mess = MemData::new_rc(MemData::Mess(Mess::new()));
         Context {
             global,
             parent: Some(parent.clone()),
-            messId,
+            mess,
         }
     }
     pub fn new_rc(parent: &ContextRc) -> ContextRc {
         Rc::new(RefCell::new(Context::new(parent)))
     }
     pub fn root(global: &GlobalRc) -> Self {
-        let messId = global.borrow_mut().data.add(MemData::Mess(Mess::new()));
+        let mess = MemData::new_rc(MemData::Mess(Mess::new()));
         Context {
             global: global.clone(),
             parent: None,
-            messId,
+            mess,
         }
     }
     pub fn root_rc() -> ContextRc {
@@ -70,8 +70,8 @@ impl Context {
 }
 
 impl Context {
-    fn get_mess_item(&self) -> DataItemRc {
-        self.global.borrow().data.get(self.messId).unwrap()
+    pub fn get_mess(&self) -> MemDataRc {
+        self.mess.clone()
     }
 
     pub fn get_global(&self) -> GlobalRc {
@@ -82,33 +82,10 @@ impl Context {
         self.get_global().borrow().context_root.to_owned().unwrap()
     }
 
-    pub fn get_mem(&self, name: &str) -> Option<DataItemRc> {
-        let item = self.get_symbol(name);
-        if let Some(item) = item {
-            if let VarType::Ref(var_ref) = item {
-                self.get_mem_by_ref(var_ref)
-            } else {
-                panic!("Expected reference type, got {:?}", item)
-            }
-        } else if let Some(parent) = &self.parent {
-            parent.borrow_mut().get_mem(name)
-        } else {
-            None
-        }
-    }
-
-    pub fn get_mem_by_ref(&self, ref_id: i64) -> Option<DataItemRc> {
-        self.global.borrow().data.get(ref_id)
-    }
-
-    pub fn add_mem(&self, data: MemData) -> VarType {
-        VarType::Ref(self.get_global().borrow_mut().data.add(data))
-    }
-
     pub fn get_symbol(&self, name: &str) -> Option<VarType> {
-        let data_item = self.get_mess_item();
-        if data_item.borrow().data.has(&name) {
-            return Some(data_item.borrow().data.get(&name));
+        let data_item = self.get_mess();
+        if data_item.borrow().has(&name) {
+            return Some(data_item.borrow().get(&name));
         }
         if let Some(parent) = &self.parent {
             parent.borrow().get_symbol(name)
@@ -117,13 +94,9 @@ impl Context {
         }
     }
 
-    pub fn get_symbol_mess_id(&self) -> i64 {
-        return self.messId;
-    }
-
     pub fn has_symbol(&self, name: &str) -> bool {
-        let data_item = self.get_mess_item();
-        if data_item.borrow().data.has(&name) {
+        let data_item = self.get_mess();
+        if data_item.borrow().has(&name) {
             return true;
         }
         if let Some(parent) = &self.parent {
@@ -135,13 +108,9 @@ impl Context {
 
     pub fn set_symbol(&self, name: &str, value: VarType) {
         if self.has_symbol(name) {
-            let data_item = self.get_mess_item();
-            if data_item.borrow().data.has(&name) {
-                data_item
-                    .borrow_mut()
-                    .data
-                    .set(&self, &name, value)
-                    .unwrap();
+            let data_item = self.get_mess();
+            if data_item.borrow().has(&name) {
+                data_item.borrow_mut().set(&self, &name, value).unwrap();
                 return;
             }
             if let Some(parent) = &self.parent {
@@ -150,9 +119,8 @@ impl Context {
                 panic!("Symbol {} not found.", name.to_string())
             }
         } else {
-            self.get_mess_item()
+            self.get_mess()
                 .borrow_mut()
-                .data
                 .set(&self, &name, value)
                 .unwrap();
         }
