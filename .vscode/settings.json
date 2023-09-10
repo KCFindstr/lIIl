@@ -2,5 +2,6 @@
   "rust-analyzer.linkedProjects": [
     "Cargo.toml",
   ],
-  "editor.tabSize": 4
+  "editor.tabSize": 4,
+  "markdown.extension.toc.levels": "1..4"
 }

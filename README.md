@@ -2,6 +2,37 @@
 
 ![build test](https://github.com/KCFindstr/lIIl/actions/workflows/build-test.yml/badge.svg)
 
+- [lIIl Is Intuitive language.](#liil-is-intuitive-language)
+  - [Overview](#overview)
+    - [What is lIIl?](#what-is-liil)
+    - [Why lIIl?](#why-liil)
+      - [Exceptional Performance](#exceptional-performance)
+      - [Intuitive Syntax](#intuitive-syntax)
+      - [Concise Code](#concise-code)
+    - [How to use lIIl?](#how-to-use-liil)
+  - [Docs](#docs)
+    - [Data types](#data-types)
+      - [`Integer`, `Float`, `Bool`, `String`](#integer-float-bool-string)
+      - [`Tuple`](#tuple)
+      - [`Nzero` or `N0`](#nzero-or-n0)
+    - [Syntax](#syntax)
+      - [All statements end with a period `.`](#all-statements-end-with-a-period-)
+      - [Use libraries](#use-libraries)
+      - [Assignment](#assignment)
+      - [Conditional statement](#conditional-statement)
+      - [Looping](#looping)
+      - [Node](#node)
+      - [Maybe run a command](#maybe-run-a-command)
+    - [Builtin libraries](#builtin-libraries)
+      - [`cpu`](#cpu)
+    - [Other "Gotcha!"s](#other-gotchas)
+      - [Better `not`](#better-not)
+      - [`this` or `that`](#this-or-that)
+    - [Learn more about lIIl](#learn-more-about-liil)
+  - [Use lIIl in production](#use-liil-in-production)
+  - [Contributing](#contributing)
+
+
 ## Overview
 
 ### What is lIIl?
