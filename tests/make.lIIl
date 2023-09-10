@@ -1,0 +1,22 @@
+rm ut.
+
+mk a 1.
+a = 1 >> assert@ut.
+
+make a = 2.
+a = 2 >> assert@ut.
+
+mk a > 3.
+a = 4 >> assert@ut.
+
+mk a < 4.
+a = 3 >> assert@ut.
+
+mk a >= 4.
+a = 4 >> assert@ut.
+
+mk a <= 3.
+a = 3 >> assert@ut.
+
+mk a != 3.
+a != 3 >> assert@ut.

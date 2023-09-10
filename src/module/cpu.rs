@@ -2,9 +2,7 @@ use std::rc::Rc;
 
 use crate::{
     data::node::NativeNode,
-    data::{
-        context::ContextRc, data::Mess, module_manager::ModuleFactoryManager, variable::VarType,
-    },
+    data::{context::ContextRc, data::Mess, module::ModuleFactoryManager, variable::VarType},
     statement::CodeExecError,
 };
 

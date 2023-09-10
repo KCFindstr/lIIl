@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use super::{
     context::{ContextRc, GlobalRc},
-    module_manager::{register_builtin_modules, ModuleFactoryManager},
+    module::{register_builtin_modules, ModuleFactoryManager},
     stack::ProgramStack,
 };
 

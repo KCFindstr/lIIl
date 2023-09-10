@@ -1,6 +1,7 @@
 use pest::iterators::Pairs;
 
 use crate::{
+    expr::CompareOp,
     module::CodeModule,
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
@@ -39,16 +40,24 @@ fn parse_rm(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<RmStatement, 
 fn parse_ass(pairs: Pairs<Rule>) -> Result<AssStatement, CodeExecError> {
     let mut lhs = None;
     let mut rhs = None;
+    let mut op = CompareOp::Equal;
     for pair in pairs {
         match pair.as_rule() {
             Rule::lvalue => lhs = Some(parse_lvalue(pair.into_inner())?),
             Rule::expr => rhs = Some(parse_expr(pair.into_inner())),
+            Rule::equal_op => op = CompareOp::Equal,
+            Rule::neq_op => op = CompareOp::NotEqual,
+            Rule::greater_op => op = CompareOp::Greater,
+            Rule::geq_op => op = CompareOp::GreaterEqual,
+            Rule::less_op => op = CompareOp::Less,
+            Rule::leq_op => op = CompareOp::LessEqual,
             _ => panic!("parse_ass: {:?}", pair),
         }
     }
     Ok(AssStatement {
         lhs: lhs.unwrap(),
         rhs: rhs.unwrap(),
+        op,
     })
 }
 

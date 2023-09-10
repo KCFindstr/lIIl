@@ -1,0 +1,5 @@
+rm lib.
+rm ut.
+
+3 >> f@lib.
+that = 13 >> assert@ut.

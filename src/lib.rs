@@ -43,6 +43,16 @@ mod unit_tests {
     fn test_not() {
         exec_program("not.lIIl");
     }
+
+    #[test]
+    fn test_make() {
+        exec_program("make.lIIl");
+    }
+
+    #[test]
+    fn test_lib() {
+        exec_program("lib/main.lIIl");
+    }
 }
 
 #[cfg(test)]

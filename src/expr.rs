@@ -320,8 +320,7 @@ impl NotExpr {
     fn sample_ref() -> i64 {
         Self::sample_int(0)
     }
-    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
-        let value = self.value.eval(ctx)?;
+    pub fn not(ctx: &ContextRc, value: VarType) -> Result<VarType, CodeExecError> {
         match value {
             VarType::Int(value) => Ok(VarType::Int(Self::sample_int(value))),
             VarType::Float(value) => Ok(VarType::Float(Self::sample_float(value))),
@@ -331,6 +330,9 @@ impl NotExpr {
             VarType::Nzero => Ok(VarType::Int(Self::sample_ref())),
             _ => Err(expr_type_error_1(&ctx.borrow(), value)),
         }
+    }
+    fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
+        Self::not(ctx, self.value.eval(ctx)?)
     }
 }
 
