@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use crate::{
     data::context::Context,
     data::{context::ContextRc, variable::VarType},
-    expr::Expr,
+    statement::ret::ReturnStatement,
 };
 
 use self::{
@@ -16,6 +16,7 @@ pub mod if_stmt;
 pub mod loli;
 pub mod maybe;
 pub mod node_def;
+pub mod ret;
 pub mod rm;
 
 pub struct CodeExecError {
@@ -41,7 +42,7 @@ impl CodeExecError {
 pub enum Statement {
     Rm(RmStatement),
     Ass(AssStatement),
-    Expr(ExprStatement),
+    Ret(ReturnStatement),
     If(IfStatement),
     Loli(LoliStatement),
     Maybe(MaybeStatement),
@@ -54,7 +55,7 @@ impl Statement {
         match self {
             Statement::Rm(stmt) => stmt.exec(ctx),
             Statement::Ass(stmt) => stmt.exec(ctx),
-            Statement::Expr(stmt) => stmt.exec(ctx),
+            Statement::Ret(stmt) => stmt.exec(ctx),
             Statement::If(stmt) => stmt.exec(ctx),
             Statement::Loli(stmt) => stmt.exec(ctx),
             Statement::Maybe(stmt) => stmt.exec(ctx),
@@ -83,17 +84,5 @@ impl Statements {
     }
     pub fn push(&mut self, stmt: Statement) {
         self.stmts.push(stmt);
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct ExprStatement {
-    pub expr: Expr,
-}
-
-impl ExprStatement {
-    pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
-        self.expr.eval(ctx)?;
-        Ok(None)
     }
 }

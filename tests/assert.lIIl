@@ -2,3 +2,12 @@ del ut.
 
 O | "Failed to assert O." >> assert@ut.
 !X | "Failed to assert !X." >> assert@ut.
+1.0 | "Failed to assert 1.0." >> assert@ut.
+!0.0 | "Failed to assert !0.0." >> assert@ut.
+1 | "Failed to assert 1." >> assert@ut.
+!0 | "Failed to assert !0." >> assert@ut.
+("a" | "b") | "Failed to assert (a | b)." >> assert@ut.
+"abc" | "Failed to assert \"abc\"." >> assert@ut.
+!"" | "Failed to assert !\"\"." >> assert@ut.
+!N0 | "Failed to assert !N0." >> assert@ut.
+!Nzero | "Failed to assert !Nzero." >> assert@ut.

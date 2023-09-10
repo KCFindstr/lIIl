@@ -21,3 +21,8 @@ fn exec_program(file: &str) -> CodeModule {
 fn test_assert() {
     exec_program("assert.lIIl");
 }
+
+#[test]
+fn test_that() {
+    exec_program("that.lIIl");
+}

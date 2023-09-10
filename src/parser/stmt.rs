@@ -1,16 +1,19 @@
 use pest::iterators::Pairs;
 
 use crate::{
+    data::lvalue::LValue,
     module::CodeModule,
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
         ass::AssStatement, if_stmt::IfStatement, loli::LoliStatement, maybe::MaybeStatement,
-        node_def::NodeDefStatement, rm::RmStatement, CodeExecError, ExprStatement, Statement,
-        Statements,
+        node_def::NodeDefStatement, ret::ReturnStatement, rm::RmStatement, CodeExecError,
+        Statement, Statements,
     },
 };
 
 use super::{expr::parse_expr, Rule};
+
+const _THAT: &'static str = "that";
 
 fn parse_stmt_block(
     module: &mut CodeModule,
@@ -84,6 +87,20 @@ fn parse_loli(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<LoliStateme
     })
 }
 
+fn parse_ret(pairs: Pairs<Rule>) -> Result<ReturnStatement, CodeExecError> {
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::expr => {
+                return Ok(ReturnStatement {
+                    value: parse_expr(pair.into_inner()),
+                })
+            }
+            _ => panic!("parse_ret: {:?}", pair),
+        }
+    }
+    panic!("parse_ret: Reached end of input")
+}
+
 fn parse_maybe(
     module: &mut CodeModule,
     pairs: Pairs<Rule>,
@@ -129,8 +146,9 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
             Rule::rm_stmt => return Ok(Statement::Rm(parse_rm(module, pair.into_inner())?)),
             Rule::ass_stmt => return Ok(Statement::Ass(parse_ass(pair.into_inner())?)),
             Rule::expr => {
-                return Ok(Statement::Expr(ExprStatement {
-                    expr: parse_expr(pair.into_inner()),
+                return Ok(Statement::Ass(AssStatement {
+                    lhs: LValue::Identifier(_THAT.to_owned()),
+                    rhs: parse_expr(pair.into_inner()),
                 }))
             }
             Rule::node_def_stmt => {
@@ -140,6 +158,7 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
                 )?))
             }
             Rule::if_stmt => return Ok(Statement::If(parse_if(module, pair.into_inner())?)),
+            Rule::return_stmt => return Ok(Statement::Ret(parse_ret(pair.into_inner())?)),
             Rule::maybe_stmt => {
                 return Ok(Statement::Maybe(parse_maybe(module, pair.into_inner())?))
             }
