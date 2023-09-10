@@ -100,7 +100,7 @@ make sum 0.
 make first O.
 ```
 
-We define two variables: `sum` to be the integer `0` and `first` to be `O`. `O` and `X` are two states of a toggle, or `true` and `false` in some other programming languages. We choose `O` and `X` because they make people who cannot speak a word of English understand the state of the toggle intuitively, making `lIIl` available to a wider range of audience.
+We define two variables: `sum` to be the integer `0` and `first` to be `O`. `O` and `X` are two states of a toggle, or `true` and `false` in some other programming languages. I choose `O` and `X` because they make people who cannot speak a word of English understand the state of the toggle intuitively, making lIIl available to a wider range of audience.
 
 ```
 loli a > 0 {
