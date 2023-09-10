@@ -1,5 +1,7 @@
 # lIIl Is Intuitive language.
 
+![build test](https://github.com/KCFindstr/lIIl/actions/workflows/build-test.yml/badge.svg)
+
 ## Overview
 
 ### What is lIIl?
