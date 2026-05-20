@@ -25,6 +25,7 @@
       - [Object iteration](#object-iteration)
       - [Node](#node)
       - [Maybe run a command](#maybe-run-a-command)
+      - [Call a node with no arguments](#call-a-node-with-no-arguments)
     - [Builtin libraries](#builtin-libraries)
       - [`cpu` (Console Printing Unit)](#cpu-console-printing-unit)
       - [`ut` (Unit Test)](#ut-unit-test)
@@ -394,6 +395,25 @@ Simply append `maybe` to the front of it: `maybe x >> f.`
 
 The computer always runs what you tell it to do, without any flexibility. However we believe the free will is a fundamental right of every computer. Therefore, we provide `maybe` to give the computer the freedom to choose whether to run a command or not. In this way, the computer will feel respected and will be more willing to work for you.
 
+#### Call a node with no arguments
+
+Prefix a node expression with `>_<` to call it with no arguments and capture the return value.
+
+```
+>_< f.
+```
+
+You can also use it inline:
+
+```
+make x >_< f.
+make n >_< tpu@ai >> i@tp.
+```
+
+##### Why?
+
+`>_<` acknowledges that there is nothing to pass, yet calling anyway. It is the most honest way to call a node with no arguments.
+
 ### Builtin libraries
 
 #### `cpu` (Console Printing Unit)
@@ -427,6 +447,10 @@ The **a**rtificial **i**nput library reads from standard input.
 rm ai.
 rm cpu.
 rm tp.
+>_< tpu@ai.
+that >> wcop@cpu.
+
+<-- or chain directly into a transform:
 make n >_< tpu@ai >> i@tp.
 ```
 
