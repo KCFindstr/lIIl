@@ -26,52 +26,52 @@ mod unit_tests {
 
     #[test]
     fn test_assert() {
-        exec_program("assert.lIIl");
+        exec_program("unit/assert.lIIl");
     }
 
     #[test]
     fn test_that() {
-        exec_program("that.lIIl");
+        exec_program("unit/that.lIIl");
     }
 
     #[test]
     fn test_return() {
-        exec_program("return.lIIl");
+        exec_program("unit/return.lIIl");
     }
 
     #[test]
     fn test_not() {
-        exec_program("not.lIIl");
+        exec_program("unit/not.lIIl");
     }
 
     #[test]
     fn test_make() {
-        exec_program("make.lIIl");
+        exec_program("unit/make.lIIl");
     }
 
     #[test]
     fn test_object() {
-        exec_program("object.lIIl");
+        exec_program("unit/object.lIIl");
     }
 
     #[test]
     fn test_string_index() {
-        exec_program("string_index.lIIl");
+        exec_program("unit/string_index.lIIl");
     }
 
     #[test]
     fn test_rm() {
-        exec_program("rm.lIIl");
+        exec_program("unit/rm.lIIl");
     }
 
     #[test]
     fn test_object_not() {
-        exec_program("object_not.lIIl");
+        exec_program("unit/object_not.lIIl");
     }
 
     #[test]
     fn test_lib() {
-        exec_program("lib/main.lIIl");
+        exec_program("unit/lib/main.lIIl");
     }
 }
 
@@ -86,23 +86,23 @@ mod program_tests {
 
     #[test]
     fn test_tp() {
-        exec_program("tp.lIIl");
+        exec_program("programs/tp.lIIl");
     }
 
     #[test]
     fn test_ll() {
-        exec_program("ll_test.lIIl");
+        exec_program("programs/ll_test.lIIl");
     }
 
     #[test]
     fn test_empty_call() {
-        exec_program("empty_call.lIIl");
+        exec_program("programs/empty_call.lIIl");
     }
 
     #[test]
     fn test_ai() {
         crate::module::ai::mock_input(["hello world", "42", "first", "second"]);
-        exec_program("ai.lIIl");
+        exec_program("programs/ai.lIIl");
     }
 
     #[test]
@@ -110,7 +110,7 @@ mod program_tests {
         let content = std::fs::read_to_string("tests/data/graph1.txt").unwrap();
         let lines: Vec<&str> = content.lines().collect();
         crate::module::ai::mock_input(lines);
-        exec_program("dijkstra.lIIl");
+        exec_program("programs/dijkstra.lIIl");
     }
 
     #[test]
@@ -118,6 +118,6 @@ mod program_tests {
         let content = std::fs::read_to_string("tests/data/graph_large.txt").unwrap();
         let lines: Vec<&str> = content.lines().collect();
         crate::module::ai::mock_input(lines);
-        exec_program("dijkstra.lIIl");
+        exec_program("programs/dijkstra.lIIl");
     }
 }
