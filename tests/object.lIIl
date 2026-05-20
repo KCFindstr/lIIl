@@ -1,0 +1,42 @@
+rm ut.
+
+<-- create an empty object
+make obj lol.
+
+<-- literal key set and get
+make a@obj 1.
+a@obj = 1 | "a@obj should be 1." >> assert@ut.
+
+<-- dynamic key set and get
+make key "b".
+make [key]@obj 2.
+b@obj = 2 | "b@obj should be 2 (literal)." >> assert@ut.
+[key]@obj = 2 | "b@obj should be 2 (dynamic)." >> assert@ut.
+
+<-- overwrite via literal key
+make a@obj 10.
+a@obj = 10 | "a@obj should be 10 after overwrite." >> assert@ut.
+
+<-- overwrite via dynamic key
+make [key]@obj 20.
+b@obj = 20 | "b@obj should be 20 after dynamic overwrite." >> assert@ut.
+
+<-- independent objects do not share state
+make obj2 lol.
+make c@obj2 99.
+c@obj2 = 99 | "obj2.c should be 99." >> assert@ut.
+a@obj2 = N0 | "obj2.a should be N0 (not set)." >> assert@ut.
+
+<-- ovo iteration visits all keys exactly once
+make count 0.
+loli k ovo obj {
+    make count count + 1.
+}
+count = 2 | "ovo should visit exactly 2 keys." >> assert@ut.
+
+<-- ovo binds the key string correctly
+make last_key "".
+loli k ovo obj2 {
+    make last_key k.
+}
+last_key = "c" | "last key in obj2 should be c." >> assert@ut.

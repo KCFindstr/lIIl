@@ -6,13 +6,8 @@ use super::context::ContextRc;
 
 pub type FactoryFn = Rc<dyn Fn(&ContextRc) -> Module>;
 
-struct ModuleFactory {
-    pub name: String,
-    pub factory: FactoryFn,
-}
-
 pub struct ModuleFactoryManager {
-    factories: HashMap<String, ModuleFactory>,
+    factories: HashMap<String, FactoryFn>,
 }
 
 impl ModuleFactoryManager {
@@ -23,17 +18,11 @@ impl ModuleFactoryManager {
     }
 
     pub fn add_factory(&mut self, name: &str, factory: FactoryFn) {
-        self.factories.insert(
-            name.to_owned(),
-            ModuleFactory {
-                name: name.to_owned(),
-                factory,
-            },
-        );
+        self.factories.insert(name.to_owned(), factory);
     }
 
     pub fn get_factory(&self, name: &str) -> Option<FactoryFn> {
-        self.factories.get(name).map(|f| f.factory.clone())
+        self.factories.get(name).map(|f| f.clone())
     }
 }
 

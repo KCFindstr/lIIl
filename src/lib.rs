@@ -50,6 +50,11 @@ mod unit_tests {
     }
 
     #[test]
+    fn test_object() {
+        exec_program("object.lIIl");
+    }
+
+    #[test]
     fn test_lib() {
         exec_program("lib/main.lIIl");
     }
