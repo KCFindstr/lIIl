@@ -4,12 +4,9 @@ rm ll.
 map << lst | f {
     mk res lol.
     mk len@res 0.
-    mk i 0.
-    loli i < len@lst {
-        mk val [i]@lst.
+    loli val qaq lst {
         mk new_val val >> f.
         res | new_val >> hasu@ll.
-        mk i > i.
     }
     (°∀°)ﾉ res.
 }
@@ -17,23 +14,17 @@ map << lst | f {
 filter << lst | f {
     mk res lol.
     mk len@res 0.
-    mk i 0.
-    loli i < len@lst {
-        mk val [i]@lst.
+    loli val qaq lst {
         mk keep val >> f.
         keep nara res | val >> hasu@ll.
-        mk i > i.
     }
     (°∀°)ﾉ res.
 }
 
 reduce << lst | f | init {
     mk acc init.
-    mk i 0.
-    loli i < len@lst {
-        mk val [i]@lst.
+    loli val qaq lst {
         mk acc acc | val >> f.
-        mk i > i.
     }
     (°∀°)ﾉ acc.
 }

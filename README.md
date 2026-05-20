@@ -358,6 +358,34 @@ right: megu
 
 `ovo` stands for **OV**er **O**bject. We want it to be very clear that you are iterating over every single entry of a `lol`.
 
+#### Array iteration
+
+`loli val qaq arr { val >> op@cpu. }` iterates over all elements of the `lol` object `arr` (assuming it has a `len` property), binding each value to `val`.
+
+`qaq` is case-insensitive, so `QAQ`, `Qaq`, and `qaq` all work.
+
+```lIIl
+rm ut.
+rm ll.
+rm cpu.
+
+make lst lol.
+lst | 10 >> hasu@ll.
+lst | 20 >> hasu@ll.
+loli val qaq lst {
+    val >> op@cpu.
+}
+```
+
+The expected output is:
+```
+1020
+```
+
+##### Why?
+
+`qaq` stands for **Q**uick **A**rray **Q**uery. It is also a crying face emoticon, which perfectly represents the feeling of writing code in this language.
+
 #### Node
 
 In lIIl, node is a piece of code with dynamic inputs and outputs.

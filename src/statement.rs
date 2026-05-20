@@ -9,6 +9,7 @@ use crate::{
 use self::{
     ass::AssStatement, expr::ExprStatement, if_stmt::IfStatement, loli::LoliStatement,
     maybe::MaybeStatement, node_def::NodeDefStatement, ovo::OvoStatement, rm::RmStatement,
+    qaq::QaqStatement,
 };
 
 pub mod ass;
@@ -18,6 +19,7 @@ pub mod loli;
 pub mod maybe;
 pub mod node_def;
 pub mod ovo;
+pub mod qaq;
 pub mod ret;
 pub mod rm;
 
@@ -48,6 +50,7 @@ pub enum Statement {
     If(IfStatement),
     Loli(LoliStatement),
     Ovo(OvoStatement),
+    Qaq(QaqStatement),
     Maybe(MaybeStatement),
     NodeDef(NodeDefStatement),
     Expr(ExprStatement),
@@ -63,6 +66,7 @@ impl Statement {
             Statement::If(stmt) => stmt.exec(ctx),
             Statement::Loli(stmt) => stmt.exec(ctx),
             Statement::Ovo(stmt) => stmt.exec(ctx),
+            Statement::Qaq(stmt) => stmt.exec(ctx),
             Statement::Maybe(stmt) => stmt.exec(ctx),
             Statement::NodeDef(stmt) => stmt.exec(ctx),
             Statement::Expr(stmt) => stmt.exec(ctx),

@@ -60,6 +60,11 @@ mod unit_tests {
     }
 
     #[test]
+    fn test_qaq() {
+        exec_program("unit/qaq.lIIl");
+    }
+
+    #[test]
     fn test_rm() {
         exec_program("unit/rm.lIIl");
     }

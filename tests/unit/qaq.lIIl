@@ -1,0 +1,13 @@
+rm ut.
+rm ll.
+
+mk lst lol.
+lst | 10 >> hasu@ll.
+lst | 20 >> hasu@ll.
+lst | 30 >> hasu@ll.
+
+mk sum 0.
+loli val qaq lst {
+    mk sum sum + val.
+}
+sum = 60 | "QAQ should iterate over all elements and sum them." >> assert@ut.

@@ -42,6 +42,7 @@ stmt = {
   | node_def_stmt
   | if_stmt
   | ovo_stmt
+  | qaq_stmt
   | loli_stmt
   | maybe_stmt
   | stmt_block
@@ -88,6 +89,9 @@ loli_stmt_prefix = _{ "loli " }
 
 /// ovo stmt (iterate over object keys, case-insensitive).
 ovo_stmt = { "loli " ~ identifier ~ ^"ovo" ~ expr ~ stmt }
+
+/// qaq stmt (iterate over array elements, case-insensitive).
+qaq_stmt = { "loli " ~ identifier ~ ^"qaq" ~ expr ~ stmt }
 
 /// maybe stmt.
 maybe_stmt = { maybe_stmt_prefix ~ stmt }

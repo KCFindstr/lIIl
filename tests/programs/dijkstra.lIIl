@@ -115,11 +115,7 @@ loli len@heap > 0 {
     
     d <= [u]@dist たら {
         mk u_adj [u]@adj.
-        mk j 0.
-        mk l len@u_adj.
-        l = N0 たら mk l 0.
-        loli j < l {
-            mk edge [j]@u_adj.
+        loli edge qaq u_adj {
             mk v node@edge.
             mk w weight@edge.
             
@@ -131,7 +127,7 @@ loli len@heap > 0 {
                 mk dist@next_item new_d.
                 heap | next_item >> heap_push.
             }
-            mk j > j.
+
         }
     }
 }
