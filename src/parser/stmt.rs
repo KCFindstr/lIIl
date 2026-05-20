@@ -6,8 +6,8 @@ use crate::{
     parser::{expr::parse_lvalue, literal::parse_identifier_tuple},
     statement::{
         ass::AssStatement, expr::ExprStatement, if_stmt::IfStatement, loli::LoliStatement,
-        maybe::MaybeStatement, node_def::NodeDefStatement, ret::ReturnStatement, rm::RmStatement,
-        CodeExecError, Statement, Statements,
+        maybe::MaybeStatement, node_def::NodeDefStatement, ovo::OvoStatement,
+        ret::ReturnStatement, rm::RmStatement, CodeExecError, Statement, Statements,
     },
 };
 
@@ -93,6 +93,25 @@ fn parse_loli(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<LoliStateme
     })
 }
 
+fn parse_ovo(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<OvoStatement, CodeExecError> {
+    let mut var = None;
+    let mut obj = None;
+    let mut body = None;
+    for pair in pairs {
+        match pair.as_rule() {
+            Rule::identifier => var = Some(pair.as_str().to_owned()),
+            Rule::expr => obj = Some(parse_expr(pair.into_inner())),
+            Rule::stmt => body = Some(parse_stmt(module, pair.into_inner())?),
+            _ => panic!("parse_ovo: {:?}", pair),
+        }
+    }
+    Ok(OvoStatement {
+        var: var.unwrap(),
+        obj: obj.unwrap(),
+        body: Box::new(body.unwrap()),
+    })
+}
+
 fn parse_ret(pairs: Pairs<Rule>) -> Result<ReturnStatement, CodeExecError> {
     for pair in pairs {
         match pair.as_rule() {
@@ -168,6 +187,7 @@ pub fn parse_stmt(module: &mut CodeModule, pairs: Pairs<Rule>) -> Result<Stateme
                 return Ok(Statement::Maybe(parse_maybe(module, pair.into_inner())?))
             }
             Rule::loli_stmt => return Ok(Statement::Loli(parse_loli(module, pair.into_inner())?)),
+            Rule::ovo_stmt => return Ok(Statement::Ovo(parse_ovo(module, pair.into_inner())?)),
             Rule::stmt_block => {
                 return Ok(Statement::Stmts(parse_stmt_block(
                     module,

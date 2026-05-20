@@ -39,14 +39,14 @@ pub fn parse_lvalue(pairs: Pairs<Rule>) -> Result<LValue, CodeExecError> {
     match pair.as_rule() {
         Rule::identifier => Ok(LValue::Identifier(pair.as_str().to_string())),
         Rule::expr => {
-            let expr = parse_expr(pairs);
-            if let Expr::Member(member) = expr {
-                Ok(LValue::MemberExpr(member))
-            } else {
-                Err(CodeExecError::new_str(format!(
-                    "Expected member expression, found {:?}",
+            let expr = parse_expr(pair.into_inner());
+            match expr {
+                Expr::Member(member) => Ok(LValue::MemberExpr(member)),
+                Expr::Identifier(id) => Ok(LValue::Identifier(id.name)),
+                _ => Err(CodeExecError::new_str(format!(
+                    "Expected member or identifier expression, found {:?}",
                     expr
-                )))
+                ))),
             }
         }
         _ => panic!("parse_lvalue: {:?}", pair),

@@ -8,6 +8,7 @@ use super::{context::Context, node::Node, variable::VarType};
 pub enum MemData {
     Mess(Mess),
     Array(Array),
+    Object(Object),
     Node(Node),
 }
 pub type MemDataRc = Rc<RefCell<MemData>>;
@@ -30,6 +31,7 @@ impl MemData {
                     ))
                 }
             }
+            MemData::Object(obj) => Ok(obj.set(key, val)),
             MemData::Node(_node) => Err(CodeExecError::new(
                 ctx,
                 format!("Cannot set key {} on node.", key),
@@ -53,6 +55,13 @@ impl MemData {
                     VarType::Nzero
                 }
             }
+            MemData::Object(obj) => {
+                if let Some(var) = obj.get(key) {
+                    var
+                } else {
+                    VarType::Nzero
+                }
+            }
             MemData::Node(_node) => VarType::Nzero,
         }
     }
@@ -61,6 +70,7 @@ impl MemData {
         match self {
             MemData::Mess(mess) => mess.has(key),
             MemData::Array(array) => array.has(key),
+            MemData::Object(obj) => obj.has(key),
             MemData::Node(_node) => false,
         }
     }
@@ -98,6 +108,37 @@ impl Mess {
 #[derive(Debug, Clone)]
 pub struct Array {
     pub items: Vec<VarType>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Object {
+    members: HashMap<String, VarType>,
+}
+
+impl Object {
+    pub fn new() -> Self {
+        Object {
+            members: HashMap::new(),
+        }
+    }
+
+    pub fn has(&self, name: &str) -> bool {
+        self.members.contains_key(name)
+    }
+
+    pub fn get(&self, name: &str) -> Option<VarType> {
+        self.members.get(name).cloned()
+    }
+
+    pub fn set(&mut self, name: &str, var: VarType) {
+        self.members.insert(name.to_string(), var);
+    }
+
+    pub fn keys(&self) -> Vec<String> {
+        let mut keys: Vec<String> = self.members.keys().cloned().collect();
+        keys.sort();
+        keys
+    }
 }
 
 impl Array {

@@ -71,6 +71,7 @@ pub fn parse_literal(pairs: Pairs<Rule>) -> Expr {
         })),
         Rule::nzero_literal => Expr::literal(VarType::Nzero),
         Rule::array_literal => Expr::Array(parse_array_literal(pair)),
+        Rule::lol_literal => Expr::Lol,
         _ => panic!("parse_literal: {:?}", pair),
     }
 }

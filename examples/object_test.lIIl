@@ -1,0 +1,13 @@
+rm cpu.
+
+make x lol.
+make key "a".
+make a@x 1.
+[key]@x >> wcop@cpu.
+make [key]@x 2.
+a@x >> wcop@cpu.
+make b@x 3.
+loli i ovo x {
+    i >> op@cpu.
+    [i]@x >> wcop@cpu.
+}

@@ -3,5 +3,6 @@
     "Cargo.toml",
   ],
   "editor.tabSize": 4,
-  "markdown.extension.toc.levels": "1..4"
+  "markdown.extension.toc.levels": "1..4",
+  "github.copilot.chat.workspace.codeSearchExternalIngest.enabled": true
 }

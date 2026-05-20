@@ -6,7 +6,7 @@ use crate::{
     data::context::Context,
     data::{
         context::ContextRc,
-        data::{Array, MemData, MemDataRc},
+        data::{Array, MemData, MemDataRc, Object},
         variable::VarType,
     },
     statement::CodeExecError,
@@ -52,6 +52,7 @@ fn promote_type(
 #[derive(Clone)]
 pub enum Expr {
     Literal(LiteralExpr),
+    Lol,
     Identifier(IdentifierExpr),
     Add(AddExpr),
     Sub(SubExpr),
@@ -71,6 +72,7 @@ impl Debug for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Expr::Literal(_expr) => write!(f, "LiteralExpr"),
+            Expr::Lol => write!(f, "LolExpr"),
             Expr::Identifier(_expr) => write!(f, "IdentifierExpr"),
             Expr::Add(_expr) => write!(f, "AddExpr"),
             Expr::Sub(_expr) => write!(f, "SubExpr"),
@@ -92,6 +94,7 @@ impl Expr {
     pub fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         match self {
             Expr::Literal(expr) => expr.eval(ctx),
+            Expr::Lol => Ok(VarType::Ref(MemData::new_rc(MemData::Object(Object::new())))),
             Expr::Identifier(expr) => expr.eval(ctx),
             Expr::Add(expr) => expr.eval(ctx),
             Expr::Sub(expr) => expr.eval(ctx),

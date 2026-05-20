@@ -41,6 +41,7 @@ stmt = {
     | expr)? ~ stmt_end)
   | node_def_stmt
   | if_stmt
+  | ovo_stmt
   | loli_stmt
   | maybe_stmt
   | stmt_block
@@ -63,7 +64,7 @@ ass_stmt_prefix = _{ "make " | "mk " }
 
 ass_stmt = { ass_stmt_prefix ~ lvalue ~ cmp_op? ~ expr}
 
-lvalue = { identifier | expr }
+lvalue = { (identifier ~ !member_op) | expr }
 
 /// Node definition.
 node_def_stmt = {
@@ -81,6 +82,9 @@ if_stmt_suffix = _{ "tara" | "たら" | "nara" | "なら" }
 loli_stmt = { loli_stmt_prefix ~ expr ~ stmt }
 
 loli_stmt_prefix = _{ "loli " }
+
+/// ovo stmt (iterate over object keys, case-insensitive).
+ovo_stmt = { "loli " ~ identifier ~ ^"ovo" ~ expr ~ stmt }
 
 /// maybe stmt.
 maybe_stmt = { maybe_stmt_prefix ~ stmt }
@@ -152,7 +156,11 @@ literal_expr = {
   | bool_literal
   | nzero_literal
   | array_literal
+  | lol_literal
 }
+
+/// lol literal - creates a new empty object (List Of Links).
+lol_literal = @{ "lol" ~ !XID_CONTINUE }
 
 /// Literals.
 string_literal = ${
