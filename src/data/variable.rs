@@ -1,6 +1,6 @@
 use std::fmt::{self, Debug};
 
-use super::data::{Array, MemDataRc};
+use super::data::{MemDataRc, Tuple};
 
 #[derive(Clone, Default)]
 pub enum VarType {
@@ -10,7 +10,7 @@ pub enum VarType {
     Int(i64),
     Float(f64),
     String(String),
-    Tuple(Array),
+    Tuple(Tuple),
     Ref(MemDataRc),
 }
 

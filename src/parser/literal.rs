@@ -43,12 +43,12 @@ pub fn parse_string_literal(pairs: Pairs<Rule>) -> String {
     s
 }
 
-pub fn parse_array_literal(pairs: Pair<Rule>) -> TupleExpr {
+pub fn parse_tuple_literal(pairs: Pair<Rule>) -> TupleExpr {
     let mut items = Vec::new();
     for pair in pairs.into_inner() {
         match pair.as_rule() {
             Rule::expr => items.push(parse_expr(pair.into_inner())),
-            _ => panic!("parse_array_literal: {:?}", pair),
+            _ => panic!("parse_bracket_expr: {:?}", pair),
         }
     }
     TupleExpr { values: items }
@@ -70,7 +70,7 @@ pub fn parse_literal(pairs: Pairs<Rule>) -> Expr {
             false
         })),
         Rule::nzero_literal => Expr::literal(VarType::Nzero),
-        Rule::array_literal => Expr::Array(parse_array_literal(pair)),
+        Rule::bracket_expr => Expr::Bracket(parse_tuple_literal(pair)),
         Rule::lol_literal => Expr::Lol,
         _ => panic!("parse_literal: {:?}", pair),
     }

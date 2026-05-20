@@ -15,12 +15,14 @@
       - [`Integer`, `Float`, `Bool`, `String`](#integer-float-bool-string)
       - [`Tuple`](#tuple)
       - [`Nzero` or `N0`](#nzero-or-n0)
+      - [`lol`](#lol)
     - [Syntax](#syntax)
       - [All statements end with a period `.`](#all-statements-end-with-a-period-)
       - [Use libraries](#use-libraries)
       - [Assignment](#assignment)
       - [Conditional statement](#conditional-statement)
       - [Looping](#looping)
+      - [Object iteration](#object-iteration)
       - [Node](#node)
       - [Maybe run a command](#maybe-run-a-command)
     - [Builtin libraries](#builtin-libraries)
@@ -31,7 +33,6 @@
     - [Learn more about lIIl](#learn-more-about-liil)
   - [Use lIIl in production](#use-liil-in-production)
   - [Contributing](#contributing)
-
 
 ## Overview
 
@@ -218,7 +219,7 @@ Pre-built binaries might be available in the future.
 
 ### Data types
 
-lIIl has `Integer`, `Float`, `Bool`, `String`, `Tuple`, and `Nzero` types. `Dialog`, `Array`, and more types are under development.
+lIIl has `Integer`, `Float`, `Bool`, `String`, `Tuple`, `lol`, and `Nzero` types. `Dialog` and more types are under development.
 
 #### `Integer`, `Float`, `Bool`, `String`
 
@@ -239,6 +240,30 @@ This is a nihility type.
 ##### Why?
 
 Some language use `None` for this type, which is a very confusing name. `N` is fine since we often use `N` in `Yes/No` questions and people can easily tell `N` has negative implications. However, the latter part is problematic. `one` natually evaluates to `true` in many languages, and we can hardly tell whether this strange combination of `N` and `one` means yes or no. Is it Schrödinger's Cat? You can only tell by running the code. `Nzero` is a much better name since it is a combination of `N` and `zero`, which is obviously negative. `N0` is an alias for `Nzero` in lIIl.
+
+#### `lol`
+
+`lol` is an object type. All keys are strings. To create an empty object: `make obj lol`. To set a member: `make key@obj value`. To get a member: `key@obj`. Keys can also be dynamic: `make [expr]@obj value` sets the member whose name is the string value of `expr`.
+
+```lIIl
+del cpu.
+
+make me lol.
+make name@me "Shimakaze".
+make age@me 17.
+"Hello, " + name@me >> op@cpu.
+" Age: " + age@me >> wcop@cpu.
+```
+
+The expected output is:
+
+```
+Hello, Shimakaze Age: 17
+```
+
+##### Why?
+
+`lol` stands for **L**ist **O**f **L**inks. A **L**ist because it holds many things, **O**f because they are connected by something, and **L**inks because each key is a string that links to a value — just like a chain of labeled doors. The fact that `lol` is also internet slang for laughing out loud is purely coincidental and we fully endorse it. Objects in lIIl should bring you joy.
 
 ### Syntax
 
@@ -285,6 +310,36 @@ You can also use `tara`, `なら`, `たら` in place of `nara`.
 ##### Why?
 
 `loli` is short for **lo**op **li**mit. No, you cannot use `rori`, `ろり`, or `ロリ`.
+
+#### Object iteration
+
+`loli i ovo obj { i >> op@cpu. }` iterates over all keys of the `lol` object `obj`, binding each key as a string to `i`.
+
+`ovo` is case-insensitive, so `OVO`, `Ovo`, and `ovo` all work.
+
+```lIIl
+del cpu.
+
+make hime lol.
+make left@hime "ruri".
+make right@hime "megu".
+loli neso ovo hime {
+    neso >> op@cpu.
+    ": " >> op@cpu.
+    [neso]@hime >> wcop@cpu.
+}
+```
+
+The expected output is:
+
+```
+left: ruri
+right: megu
+```
+
+##### Why?
+
+`ovo` stands for **OV**er **O**bject. We want it to be very clear that you are iterating over every single entry of a `lol`.
 
 #### Node
 

@@ -155,7 +155,7 @@ literal_expr = {
   | int_literal
   | bool_literal
   | nzero_literal
-  | array_literal
+  | bracket_expr
   | lol_literal
 }
 
@@ -179,4 +179,4 @@ bool_literal = @{ ("O" | "X") ~ !XID_CONTINUE }
 
 nzero_literal = @{ ("N0" | "Nzero") ~ !XID_CONTINUE }
 
-array_literal = { left_bracket ~ expr ~ right_bracket }
+bracket_expr = { left_bracket ~ expr ~ right_bracket }

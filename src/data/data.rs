@@ -7,7 +7,6 @@ use super::{context::Context, node::Node, variable::VarType};
 #[derive(Debug)]
 pub enum MemData {
     Mess(Mess),
-    Array(Array),
     Object(Object),
     Node(Node),
 }
@@ -21,16 +20,6 @@ impl MemData {
     pub fn set(&mut self, ctx: &Context, key: &str, val: VarType) -> Result<(), CodeExecError> {
         match self {
             MemData::Mess(mess) => Ok(mess.set(key, val)),
-            MemData::Array(array) => {
-                if array.set(key, val) {
-                    Ok(())
-                } else {
-                    Err(CodeExecError::new(
-                        ctx,
-                        format!("Cannot set key {} on array.", key),
-                    ))
-                }
-            }
             MemData::Object(obj) => Ok(obj.set(key, val)),
             MemData::Node(_node) => Err(CodeExecError::new(
                 ctx,
@@ -43,13 +32,6 @@ impl MemData {
         match self {
             MemData::Mess(mess) => {
                 if let Some(var) = mess.get(key) {
-                    var
-                } else {
-                    VarType::Nzero
-                }
-            }
-            MemData::Array(array) => {
-                if let Some(var) = array.get(key) {
                     var
                 } else {
                     VarType::Nzero
@@ -69,7 +51,6 @@ impl MemData {
     pub fn has(&self, key: &str) -> bool {
         match self {
             MemData::Mess(mess) => mess.has(key),
-            MemData::Array(array) => array.has(key),
             MemData::Object(obj) => obj.has(key),
             MemData::Node(_node) => false,
         }
@@ -106,7 +87,7 @@ impl Mess {
 }
 
 #[derive(Debug, Clone)]
-pub struct Array {
+pub struct Tuple {
     pub items: Vec<VarType>,
 }
 
@@ -141,34 +122,7 @@ impl Object {
     }
 }
 
-impl Array {
-    pub fn has(&self, name: &str) -> bool {
-        if let Ok(index) = name.parse::<usize>() {
-            index < self.items.len()
-        } else {
-            false
-        }
-    }
-
-    pub fn get(&self, name: &str) -> Option<VarType> {
-        if let Ok(index) = name.parse::<usize>() {
-            if index < self.items.len() {
-                return Some(self.items[index].clone());
-            }
-        }
-        None
-    }
-
-    pub fn set(&mut self, name: &str, var: VarType) -> bool {
-        if let Ok(index) = name.parse::<usize>() {
-            if index < self.items.len() {
-                self.items[index] = var;
-                return true;
-            }
-        }
-        false
-    }
-
+impl Tuple {
     pub fn len(&self) -> usize {
         self.items.len()
     }

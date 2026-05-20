@@ -6,7 +6,7 @@ use crate::{
     data::context::Context,
     data::{
         context::ContextRc,
-        data::{Array, MemData, MemDataRc, Object},
+        data::{MemData, MemDataRc, Object, Tuple},
         variable::VarType,
     },
     statement::CodeExecError,
@@ -63,7 +63,7 @@ pub enum Expr {
     Not(NotExpr),
     Neg(NegExpr),
     Tuple(TupleExpr),
-    Array(TupleExpr),
+    Bracket(TupleExpr),
     Member(MemberExpr),
     NodeCall(NodeCallExpr),
 }
@@ -83,7 +83,7 @@ impl Debug for Expr {
             Expr::Not(_expr) => write!(f, "NotExpr"),
             Expr::Neg(_expr) => write!(f, "NegExpr"),
             Expr::Tuple(_expr) => write!(f, "TupleExpr"),
-            Expr::Array(_expr) => write!(f, "ArrayExpr"),
+            Expr::Bracket(_expr) => write!(f, "BracketExpr"),
             Expr::Member(_expr) => write!(f, "MemberExpr"),
             Expr::NodeCall(_expr) => write!(f, "NodeCallExpr"),
         }
@@ -94,7 +94,9 @@ impl Expr {
     pub fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         match self {
             Expr::Literal(expr) => expr.eval(ctx),
-            Expr::Lol => Ok(VarType::Ref(MemData::new_rc(MemData::Object(Object::new())))),
+            Expr::Lol => Ok(VarType::Ref(MemData::new_rc(
+                MemData::Object(Object::new()),
+            ))),
             Expr::Identifier(expr) => expr.eval(ctx),
             Expr::Add(expr) => expr.eval(ctx),
             Expr::Sub(expr) => expr.eval(ctx),
@@ -105,7 +107,7 @@ impl Expr {
             Expr::Not(expr) => expr.eval(ctx),
             Expr::Neg(expr) => expr.eval(ctx),
             Expr::Tuple(expr) => expr.eval(ctx),
-            Expr::Array(expr) => expr.eval(ctx),
+            Expr::Bracket(expr) => expr.eval(ctx),
             Expr::Member(expr) => expr.eval(ctx),
             Expr::NodeCall(expr) => expr.eval(ctx),
         }
@@ -350,7 +352,7 @@ impl TupleExpr {
         for value in &self.values {
             items.push(value.eval(ctx)?);
         }
-        Ok(VarType::Tuple(Array { items }))
+        Ok(VarType::Tuple(Tuple { items }))
     }
 }
 
@@ -375,8 +377,8 @@ impl MemberExpr {
     fn get_key(&self, ctx: &ContextRc) -> Result<String, CodeExecError> {
         if let Expr::Identifier(id) = &*self.lhs {
             Ok(id.name.clone())
-        } else if let Expr::Array(array) = &*self.lhs {
-            let arr = array.eval(ctx)?;
+        } else if let Expr::Bracket(bracket) = &*self.lhs {
+            let arr = bracket.eval(ctx)?;
             if let VarType::Tuple(tuple) = arr {
                 if tuple.len() == 1 {
                     Ok(tuple.items[0].to_string())

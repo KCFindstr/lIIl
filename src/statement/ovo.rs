@@ -1,9 +1,5 @@
 use crate::{
-    data::{
-        context::ContextRc,
-        data::MemData,
-        variable::VarType,
-    },
+    data::{context::ContextRc, data::MemData, variable::VarType},
     expr::Expr,
 };
 
