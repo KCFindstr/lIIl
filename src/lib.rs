@@ -120,4 +120,9 @@ mod program_tests {
         crate::module::ai::mock_input(lines);
         exec_program("programs/dijkstra.lIIl");
     }
+
+    #[test]
+    fn test_map_reduce() {
+        exec_program("programs/map_reduce.lIIl");
+    }
 }
