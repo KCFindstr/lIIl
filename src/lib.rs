@@ -55,6 +55,11 @@ mod unit_tests {
     }
 
     #[test]
+    fn test_object_not() {
+        exec_program("object_not.lIIl");
+    }
+
+    #[test]
     fn test_lib() {
         exec_program("lib/main.lIIl");
     }

@@ -245,6 +245,10 @@ Some language use `None` for this type, which is a very confusing name. `N` is f
 
 `lol` is an object type. All keys are strings. To create an empty object: `make obj lol`. To set a member: `make key@obj value`. To get a member: `key@obj`. Keys can also be dynamic: `make [expr]@obj value` sets the member whose name is the string value of `expr`.
 
+Two `lol` objects can be compared with `=` and `!=` by identity — they are equal only if they are the exact same object, not merely objects with the same contents.
+
+Applying `!` to a `lol` object returns a random other `lol` object that is currently alive in the program. If no other object exists, it returns `N0`.
+
 ```lIIl
 del cpu.
 
@@ -253,17 +257,25 @@ make name@me "Shimakaze".
 make age@me 17.
 "Hello, " + name@me >> op@cpu.
 " Age: " + age@me >> wcop@cpu.
+
+make copy me.
+(copy = me) >> op@cpu.
+make other lol.
+(!me) = other >> wcop@cpu.
 ```
 
 The expected output is:
 
 ```
 Hello, Shimakaze Age: 17
+true true
 ```
 
 ##### Why?
 
 `lol` stands for **L**ist **O**f **L**inks. A **L**ist because it holds many things, **O**f because they are connected by something, and **L**inks because each key is a string that links to a value — just like a chain of labeled doors. The fact that `lol` is also internet slang for laughing out loud is purely coincidental and we fully endorse it. Objects in lIIl should bring you joy.
+
+As for `!obj` returning a random other object — in lIIl, `!` is the operator for _everything that the value is not_. A number negated by `!` becomes any other number. A string gains a `!` prefix. And a `lol` object, when negated, becomes some other `lol` object that is decidedly _not_ the original. Which one? Who knows. That is part of the fun.
 
 ### Syntax
 

@@ -1,0 +1,10 @@
+rm ut.
+
+<-- ! on the sole live object returns N0
+make sole lol.
+!sole = N0 | "!sole should be N0 when it is the only live object." >> assert@ut.
+
+<-- ! on an object with exactly one other returns that other object
+make other lol.
+(!sole) = other | "!sole should return other when other is the only candidate." >> assert@ut.
+(!other) = sole | "!other should return sole when sole is the only candidate." >> assert@ut.

@@ -1,4 +1,4 @@
-use std::{fmt::Debug, mem};
+use std::{fmt::Debug, mem, rc::Rc};
 
 use rand::Rng;
 
@@ -94,9 +94,11 @@ impl Expr {
     pub fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         match self {
             Expr::Literal(expr) => expr.eval(ctx),
-            Expr::Lol => Ok(VarType::Ref(MemData::new_rc(
-                MemData::Object(Object::new()),
-            ))),
+            Expr::Lol => {
+                let rc = MemData::new_rc(MemData::Object(Object::new()));
+                ctx.borrow().get_global().borrow_mut().register_object(&rc);
+                Ok(VarType::Ref(rc))
+            }
             Expr::Identifier(expr) => expr.eval(ctx),
             Expr::Add(expr) => expr.eval(ctx),
             Expr::Sub(expr) => expr.eval(ctx),
@@ -288,6 +290,15 @@ impl CompareExpr {
             (VarType::Int(l), VarType::Int(r)) => self.compare(l, r),
             (VarType::Float(l), VarType::Float(r)) => self.compare(l, r),
             (VarType::String(l), VarType::String(r)) => self.compare(l, r),
+            (VarType::Ref(l), VarType::Ref(r)) => match self.op {
+                CompareOp::Equal => Ok(VarType::Bool(Rc::ptr_eq(&l, &r))),
+                CompareOp::NotEqual => Ok(VarType::Bool(!Rc::ptr_eq(&l, &r))),
+                _ => Err(expr_type_error_2(
+                    &ctx.borrow(),
+                    VarType::Ref(l),
+                    VarType::Ref(r),
+                )),
+            },
             (l, r) => Err(expr_type_error_2(&ctx.borrow(), l, r)),
         }
     }
@@ -342,7 +353,16 @@ impl NotExpr {
             VarType::Float(value) => Ok(VarType::Float(Self::sample_float(value))),
             VarType::String(value) => Ok(VarType::String("!".to_owned() + &value)),
             VarType::Bool(value) => Ok(VarType::Bool(!value)),
-            VarType::Ref(_) => Ok(VarType::Nzero),
+            VarType::Ref(rc) => {
+                if matches!(*rc.borrow(), MemData::Object(_)) {
+                    match ctx.borrow().get_global().borrow().random_other_object(&rc) {
+                        Some(other) => Ok(VarType::Ref(other)),
+                        None => Ok(VarType::Nzero),
+                    }
+                } else {
+                    Ok(VarType::Nzero)
+                }
+            }
             VarType::Nzero => Ok(VarType::Int(Self::sample_ref())),
             _ => Err(expr_type_error_1(&ctx.borrow(), value)),
         }
