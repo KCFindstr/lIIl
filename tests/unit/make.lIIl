@@ -20,3 +20,9 @@ a = 3 >> assert@ut.
 
 mk a != 3.
 a != 3 >> assert@ut.
+
+<-- Test member increment (fix for greedy parsing bug)
+make obj lol.
+make val@obj 1.
+make val@obj > val@obj.
+val@obj = 2 | "Member increment should work." >> assert@ut.

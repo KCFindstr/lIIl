@@ -66,7 +66,8 @@ ass_stmt_cmp_op = _{ !(">_<") ~ cmp_op }
 
 ass_stmt = { ass_stmt_prefix ~ lvalue ~ ass_stmt_cmp_op? ~ expr}
 
-lvalue = { (identifier ~ !member_op) | expr }
+lvalue = { (identifier ~ !member_op) | member_expr }
+member_expr = { expr_primary ~ (member_op ~ expr_primary)+ }
 
 /// Node definition.
 node_def_stmt = {
