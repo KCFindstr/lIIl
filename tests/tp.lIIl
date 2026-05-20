@@ -1,0 +1,14 @@
+rm ut.
+rm tp.
+
+make r_i "42" >> i@tp.
+r_i = 42 | "i@tp should parse string 42 to integer 42." >> assert@ut.
+
+make r_f "3.14" >> f@tp.
+r_f = 3.14 | "f@tp should parse string 3.14 to float 3.14." >> assert@ut.
+
+make r_b_true "O" >> b@tp.
+r_b_true = O | "b@tp should parse O to O." >> assert@ut.
+
+make r_b_false "X" >> b@tp.
+r_b_false = X | "b@tp should parse X to X." >> assert@ut.

@@ -73,4 +73,14 @@ mod program_tests {
     fn test_gcd() {
         exec_program("programs/gcd.lIIl");
     }
+
+    #[test]
+    fn test_tp() {
+        exec_program("tp.lIIl");
+    }
+
+    #[test]
+    fn test_ll() {
+        exec_program("ll.lIIl");
+    }
 }

@@ -26,7 +26,11 @@
       - [Node](#node)
       - [Maybe run a command](#maybe-run-a-command)
     - [Builtin libraries](#builtin-libraries)
-      - [`cpu`](#cpu)
+      - [`cpu` (Console Printing Unit)](#cpu-console-printing-unit)
+      - [`ut` (Unit Test)](#ut-unit-test)
+      - [`ai` (Artificial Input)](#ai-artificial-input)
+      - [`tp` (Type Parser)](#tp-type-parser)
+      - [`ll` (Long List)](#ll-long-list)
     - [Other "Gotcha!"s](#other-gotchas)
       - [Better `not`](#better-not)
       - [`this` or `that`](#this-or-that)
@@ -392,13 +396,79 @@ The computer always runs what you tell it to do, without any flexibility. Howeve
 
 ### Builtin libraries
 
-#### `cpu`
+#### `cpu` (Console Printing Unit)
 
-The **c**onsole **p**rinting **u**nit has two members `op` for **o**ut**p**ut and `wcop` for **w**ith **c**arriage **o**ut**p**ut.
+| Member | Full name                            | Description                                            |
+| ------ | ------------------------------------ | ------------------------------------------------------ |
+| `op`   | **o**ut**p**ut                       | Prints arguments to stdout without a trailing newline. |
+| `wcop` | **w**ith **c**arriage **o**ut**p**ut | Prints arguments to stdout followed by a line feed.    |
 
 ##### Why carriage?
 
 We know people usually want to use line feed (LF) instead of carriage return (CR), and the node in fact prints LF as expected. It's only because CR is more famous than LF as any programmer who has ever coded on Windows must have known the pain of it.
+
+#### `ut` (Unit Test)
+
+The unit test library exposes one member:
+
+| Member   | Full name | Description                                                                                     |
+| -------- | --------- | ----------------------------------------------------------------------------------------------- |
+| `assert` | —         | Takes a condition and a message `cond \| msg >> assert@ut.` Panics with `msg` if `cond` is `X`. |
+
+#### `ai` (Artificial Input)
+
+The **a**rtificial **i**nput library reads from standard input.
+
+| Member | Full name                          | Description                                                                         |
+| ------ | ---------------------------------- | ----------------------------------------------------------------------------------- |
+| `tpu`  | **T**yping **P**rocessing **U**nit | Reads one line from stdin and returns it as a `String` (trailing newline stripped). |
+
+```
+rm ai.
+make line "" >> tpu@ai.
+line >> wcop@cpu.
+```
+
+#### `tp` (Type Parser)
+
+The **T**ype **P**arser converts `String` values into other data types.
+
+| Member | Full name | Description                                                                                         |
+| ------ | --------- | --------------------------------------------------------------------------------------------------- |
+| `i`    | integer   | Parses a `String` to `Integer`. Returns `N0` on failure.                                            |
+| `f`    | float     | Parses a `String` to `Float`. Returns `N0` on failure.                                              |
+| `b`    | bool      | Parses a `String` to `Bool`. `"O"`, `"true"`, `"True"`, `"TRUE"`, `"1"` → `O`; anything else → `X`. |
+
+```
+rm tp.
+make n "42" >> i@tp.
+make x "3.14" >> f@tp.
+make flag "O" >> b@tp.
+```
+
+#### `ll` (Long List)
+
+The **l**ong **l**ist library provides ordered-list operations on `lol` objects. Elements are stored under integer string keys (`"0"`, `"1"`, …) and the current length is kept in the `len` member of the object.
+
+| Member | Full name                                  | Description                                                                                        |
+| ------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| `hasu` | **H**oist **A**nd **S**tore **U**nit       | Appends element `b` to list `a`: `a \| b >> hasu@ll.`                                              |
+| `niji` | **N**ullify **I**tem, **J**oin **I**ndices | Removes element at index `idx` from list `a`, shifting later elements down: `a \| idx >> niji@ll.` |
+
+Access elements with `[idx]@list` where `idx` is an integer. Length is stored in `len@list`.
+
+```
+rm ll.
+make lst lol.
+lst | 10 >> hasu@ll.
+lst | 20 >> hasu@ll.
+lst | 30 >> hasu@ll.
+<-- lst is now {0:10, 1:20, 2:30, len:3}
+lst | 1 >> niji@ll.
+<-- lst is now {0:10, 1:30, len:2}
+```
+
+`ll` is itself implemented in lIIl and embedded at compile time.
 
 ### Other "Gotcha!"s
 
@@ -411,6 +481,7 @@ We know people usually want to use line feed (LF) instead of carriage return (CR
 - A string not equal to `a` if `a` is a string.
 - `X` if `a` is `O`.
 - `O` if `a` is `X`.
+- A random `lol` that is different from `a` if `a` is `lol`.
 
 ##### Why?
 

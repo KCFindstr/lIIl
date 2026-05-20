@@ -5,7 +5,7 @@ use pest_derive::Parser;
 
 use crate::{
     data::context::{Context, ContextRc},
-    module::CodeModule,
+    module::{CodeModule, Module},
     parser::module::parse_module,
     statement::CodeExecError,
 };
@@ -24,6 +24,19 @@ pub fn parse(module: &mut CodeModule, input: &str) -> Result<(), CodeExecError> 
     let pairs = lIIlParser::parse(Rule::module, input)
         .map_err(|e| CodeExecError::new_str(format!("Syntax error: {:?}", e)))?;
     parse_module(module, pairs.peek().unwrap().into_inner())
+}
+
+pub fn parse_str(
+    name: &str,
+    source: &str,
+    parent: &ContextRc,
+) -> Result<CodeModule, CodeExecError> {
+    let root = parent.borrow().get_root();
+    let mut module = CodeModule::new(name, &Module::builtin_path(name), &root, false);
+    Context::with(&root, || {
+        parse(&mut module, source)?;
+        Ok(module)
+    })
 }
 
 pub fn parse_file(file: &str, root_ctx: Option<ContextRc>) -> Result<CodeModule, CodeExecError> {

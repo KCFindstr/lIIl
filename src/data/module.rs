@@ -1,6 +1,8 @@
 use std::{collections::HashMap, rc::Rc};
 
-use crate::module::{cpu::CpuModule, test::TestModule, Module};
+use crate::module::{
+    ai::AiModule, cpu::CpuModule, ll::LlModule, test::TestModule, tp::TpModule, Module,
+};
 
 use super::context::ContextRc;
 
@@ -27,6 +29,9 @@ impl ModuleFactoryManager {
 }
 
 pub fn register_builtin_modules(manager: &mut ModuleFactoryManager) {
+    AiModule::register(manager);
     CpuModule::register(manager);
+    LlModule::register(manager);
     TestModule::register(manager);
+    TpModule::register(manager);
 }

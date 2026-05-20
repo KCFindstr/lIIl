@@ -43,6 +43,7 @@ fn promote_type(
         return Ok((lhs, rhs));
     }
     match (&lhs, &rhs) {
+        (VarType::Nzero, _) | (_, VarType::Nzero) => Ok((lhs, rhs)),
         (VarType::Int(l), VarType::Float(_r)) => Ok((VarType::Float(*l as f64), rhs)),
         (VarType::Float(_l), VarType::Int(r)) => Ok((lhs, VarType::Float(*r as f64))),
         _ => Err(expr_type_error_2(ctx, lhs, rhs)),

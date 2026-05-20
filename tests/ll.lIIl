@@ -1,0 +1,16 @@
+rm ut.
+rm ll.
+
+make lst lol.
+lst | 0 >> hasu@ll.
+lst | 1 >> hasu@ll.
+lst | 2 >> hasu@ll.
+len@lst = 3 | "length should be 3 after 3 appends." >> assert@ut.
+[0]@lst = 0 | "lst[0] should be 0." >> assert@ut.
+[1]@lst = 1 | "lst[1] should be 1." >> assert@ut.
+[2]@lst = 2 | "lst[2] should be 2." >> assert@ut.
+
+lst | 1 >> niji@ll.
+len@lst = 2 | "length should be 2 after removal." >> assert@ut.
+[0]@lst = 0 | "lst[0] should still be 0 after removal." >> assert@ut.
+[1]@lst = 2 | "lst[1] should be 2 (shifted up)." >> assert@ut.

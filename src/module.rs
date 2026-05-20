@@ -7,8 +7,11 @@ use crate::{
     statement::{CodeExecError, Statements},
     utils::path::Path,
 };
+pub mod ai;
 pub mod cpu;
+pub mod ll;
 pub mod test;
+pub mod tp;
 
 pub enum Module {
     Code(CodeModule),

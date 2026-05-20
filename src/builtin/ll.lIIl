@@ -1,0 +1,20 @@
+<-- ll: Long List — list operations over lol objects.
+<-- Keys "0", "1", ... hold the elements; "len" holds the count.
+
+<-- hasu: Hoist And Store Unit — appends element b to list a.
+hasu << a | b {
+    len@a = N0 tara make len@a 0.
+    make [len@a]@a b.
+    make len@a len@a + 1.
+}
+
+<-- niji: Nullify Item, Join Indices — removes element at index idx from list a.
+niji << a | idx {
+    make i idx.
+    loli i < len@a - 1 {
+        make [i]@a [i + 1]@a.
+        make i i + 1.
+    }
+    make [len@a - 1]@a N0.
+    make len@a len@a - 1.
+}
