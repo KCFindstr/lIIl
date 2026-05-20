@@ -463,12 +463,14 @@ The **T**ype **P**arser converts `String` values into other data types.
 | `i`    | integer   | Parses a `String` to `Integer`. Returns `N0` on failure.                                            |
 | `f`    | float     | Parses a `String` to `Float`. Returns `N0` on failure.                                              |
 | `b`    | bool      | Parses a `String` to `Bool`. `"O"`, `"true"`, `"True"`, `"TRUE"`, `"1"` → `O`; anything else → `X`. |
+| `ss`   | split string | Splits a `String` by a string of delimiters. Returns a `lol` object with integer keys and `len`. |
 
 ```
 rm tp.
 make n "42" >> i@tp.
 make x "3.14" >> f@tp.
 make flag "O" >> b@tp.
+make parts "a,b,c" | "," >> ss@tp.
 ```
 
 #### `ll` (Long List)

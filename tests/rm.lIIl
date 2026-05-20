@@ -1,0 +1,6 @@
+rm ut.
+rm tests/test_module.
+
+make x 1.
+make y x >> add_one@test_module.
+y = 2 | "add_one should return 2." >> assert@ut.

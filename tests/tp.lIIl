@@ -12,3 +12,17 @@ r_b_true = O | "b@tp should parse O to O." >> assert@ut.
 
 make r_b_false "X" >> b@tp.
 r_b_false = X | "b@tp should parse X to X." >> assert@ut.
+
+make res "a,b,c" | "," >> ss@tp.
+len@res = 3 | "Split result length should be 3." >> assert@ut.
+[0]@res = "a" | "First element should be 'a'." >> assert@ut.
+[1]@res = "b" | "Second element should be 'b'." >> assert@ut.
+[2]@res = "c" | "Third element should be 'c'." >> assert@ut.
+
+make res2 "a,,b" | "," >> ss@tp.
+len@res2 = 3 | "Split result length should be 3 with empty string." >> assert@ut.
+[1]@res2 = "" | "Second element should be empty string." >> assert@ut.
+
+make res3 "a,b;c" | ",;" >> ss@tp.
+len@res3 = 3 | "Split with multiple delimiters should work." >> assert@ut.
+[2]@res3 = "c" | "Third element should be 'c'." >> assert@ut.

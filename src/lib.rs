@@ -55,6 +55,16 @@ mod unit_tests {
     }
 
     #[test]
+    fn test_string_index() {
+        exec_program("string_index.lIIl");
+    }
+
+    #[test]
+    fn test_rm() {
+        exec_program("rm.lIIl");
+    }
+
+    #[test]
     fn test_object_not() {
         exec_program("object_not.lIIl");
     }
@@ -81,7 +91,7 @@ mod program_tests {
 
     #[test]
     fn test_ll() {
-        exec_program("ll.lIIl");
+        exec_program("ll_test.lIIl");
     }
 
     #[test]
@@ -93,5 +103,21 @@ mod program_tests {
     fn test_ai() {
         crate::module::ai::mock_input(["hello world", "42", "first", "second"]);
         exec_program("ai.lIIl");
+    }
+
+    #[test]
+    fn test_dijkstra_small() {
+        let content = std::fs::read_to_string("tests/data/graph1.txt").unwrap();
+        let lines: Vec<&str> = content.lines().collect();
+        crate::module::ai::mock_input(lines);
+        exec_program("dijkstra.lIIl");
+    }
+
+    #[test]
+    fn test_dijkstra_large() {
+        let content = std::fs::read_to_string("tests/data/graph_large.txt").unwrap();
+        let lines: Vec<&str> = content.lines().collect();
+        crate::module::ai::mock_input(lines);
+        exec_program("dijkstra.lIIl");
     }
 }

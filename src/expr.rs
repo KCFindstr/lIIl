@@ -429,9 +429,26 @@ impl MemberExpr {
     }
     fn eval(&self, ctx: &ContextRc) -> Result<VarType, CodeExecError> {
         let key = self.get_key(ctx)?;
-        let data = self.get_data(ctx)?;
-        let borrowed_data = data.borrow();
-        Ok(borrowed_data.get(&key))
+        let parent = self.rhs.eval(ctx)?;
+        
+        if let VarType::String(s) = parent {
+            if let Ok(idx) = key.parse::<usize>() {
+                if let Some(c) = s.chars().nth(idx) {
+                    return Ok(VarType::String(c.to_string()));
+                }
+            }
+            return Ok(VarType::Nzero);
+        }
+        
+        if let VarType::Ref(data) = parent {
+            let borrowed_data = data.borrow();
+            return Ok(borrowed_data.get(&key));
+        }
+        
+        Err(CodeExecError::new(
+            &ctx.borrow(),
+            format!("Expected ref or string, got {:?}", parent),
+        ))
     }
 
     pub fn set(&self, ctx: &ContextRc, val: VarType) -> Result<(), CodeExecError> {

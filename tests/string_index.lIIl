@@ -1,0 +1,12 @@
+rm ut.
+
+make s "str".
+[1]@s = "t" | "Index 1 of 'str' should be 't'." >> assert@ut.
+[0]@s = "s" | "Index 0 of 'str' should be 's'." >> assert@ut.
+[2]@s = "r" | "Index 2 of 'str' should be 'r'." >> assert@ut.
+[3]@s = N0 | "Index 3 of 'str' should be N0." >> assert@ut.
+
+[1]@"hello" = "e" | "Index 1 of 'hello' should be 'e'." >> assert@ut.
+
+make idx 1.
+[idx]@s = "t" | "Index variable access should work." >> assert@ut.

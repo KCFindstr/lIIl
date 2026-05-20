@@ -4,6 +4,8 @@ use crate::statement::CodeExecError;
 
 use super::{context::Context, node::Node, variable::VarType};
 
+pub const LEN_KEY: &'static str = "len";
+
 #[derive(Debug)]
 pub enum MemData {
     Mess(Mess),

@@ -22,10 +22,15 @@ impl RmStatement {
     }
     pub fn exec(&self, ctx: &ContextRc) -> Result<Option<VarType>, CodeExecError> {
         let global = ctx.borrow_mut().get_global();
-        let module_path = Module::builtin_path(&self.path);
+        let symbol_name = std::path::Path::new(&self.path)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
 
         // Module already exists.
-        if ctx.borrow().has_symbol(&module_path) {
+        if ctx.borrow().has_symbol(&symbol_name) {
             return Ok(None);
         }
 
@@ -39,19 +44,31 @@ impl RmStatement {
         }
 
         // Code module.
-        let module_path = self
-            .parent_path
-            .relative(&Path::new(&Module::code_path(&self.path)))
-            .as_std_path();
-        if !module_path.is_file() {
+        let code_path = Module::code_path(&self.path);
+        
+        // 1. Try relative to parent path
+        let mut resolved_path = self.parent_path.relative(&Path::new(&code_path)).as_std_path();
+        
+        // 2. Try relative to CWD
+        if !resolved_path.is_file() {
+            resolved_path = std::path::PathBuf::from(&code_path);
+        }
+        
+        // 3. Try in built-in search path
+        if !resolved_path.is_file() {
+            resolved_path = std::path::PathBuf::from("src/builtin").join(&code_path);
+        }
+        
+        if !resolved_path.is_file() {
             return Err(CodeExecError::new(
                 &ctx.borrow(),
                 format!("Module {} not found", self.path),
             ));
         }
-        let mut module = parse_file(module_path.to_str().unwrap(), Some(ctx.borrow().get_root()))?;
+        
+        let mut module = parse_file(resolved_path.to_str().unwrap(), Some(ctx.borrow().get_root()))?;
         let module_ret = module.exec()?;
-        ctx.borrow_mut().set_symbol(&self.path, module_ret);
+        ctx.borrow_mut().set_symbol(&symbol_name, module_ret);
         Ok(None)
     }
 }

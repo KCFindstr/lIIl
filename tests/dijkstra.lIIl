@@ -1,0 +1,147 @@
+rm ut.
+rm ai.
+rm tp.
+rm ll.
+
+up_heap << heap | idx {
+    idx = 0 nara => N0.
+    make p (idx - 1) / 2.
+    make item [idx]@heap.
+    make parent [p]@heap.
+    
+    dist@item < dist@parent nara {
+        make [idx]@heap parent.
+        make [p]@heap item.
+        heap | p >> up_heap.
+    }
+}
+
+heap_push << heap | item {
+    make [len@heap]@heap item.
+    make len@heap len@heap + 1.
+    heap | len@heap - 1 >> up_heap.
+}
+
+down_heap << heap | idx {
+    make l idx * 2 + 1.
+    make r idx * 2 + 2.
+    make smallest idx.
+    
+    l < len@heap nara {
+        make l_item [l]@heap.
+        make s_item [smallest]@heap.
+        dist@l_item < dist@s_item nara make smallest l.
+    }
+    
+    r < len@heap nara {
+        make r_item [r]@heap.
+        make s_item [smallest]@heap.
+        dist@r_item < dist@s_item nara make smallest r.
+    }
+    
+    smallest != idx nara {
+        make temp [idx]@heap.
+        make [idx]@heap [smallest]@heap.
+        make [smallest]@heap temp.
+        heap | smallest >> down_heap.
+    }
+}
+
+heap_pop << heap {
+    len@heap = 0 nara => N0.
+    make top [0]@heap.
+    make last [len@heap - 1]@heap.
+    make [0]@heap last.
+    make [len@heap - 1]@heap N0.
+    make len@heap len@heap - 1.
+    
+    len@heap > 0 nara heap | 0 >> down_heap.
+    => top.
+}
+
+make line >_< tpu@ai.
+make parts line | " " >> ss@tp.
+make n [0]@parts >> i@tp.
+make m [1]@parts >> i@tp.
+
+make adj lol.
+make i 0.
+loli i < n {
+    make item lol.
+    make [i]@adj item.
+    make i i + 1.
+}
+
+make i 0.
+loli i < m {
+    make line >_< tpu@ai.
+    make parts line | " " >> ss@tp.
+    make u [0]@parts >> i@tp.
+    make v [1]@parts >> i@tp.
+    make w [2]@parts >> i@tp.
+    
+    make edge lol.
+    make node@edge v.
+    make weight@edge w.
+    
+    make u_adj [u]@adj.
+    u_adj | edge >> hasu@ll.
+    
+    make i i + 1.
+}
+
+make start >_< tpu@ai >> i@tp.
+
+make dist lol.
+make i 0.
+loli i < n {
+    make [i]@dist 1000000000.
+    make i i + 1.
+}
+make [start]@dist 0.
+
+make heap lol.
+make len@heap 0.
+
+make item lol.
+make node@item start.
+make dist@item 0.
+heap | item >> heap_push.
+
+loli len@heap > 0 {
+    make top heap >> heap_pop.
+    make u node@top.
+    make d dist@top.
+    
+    d <= [u]@dist nara {
+        make u_adj [u]@adj.
+        make j 0.
+        make l len@u_adj.
+        l = N0 nara make l 0.
+        loli j < l {
+            make edge [j]@u_adj.
+            make v node@edge.
+            make w weight@edge.
+            
+            make new_d d + w.
+            new_d < [v]@dist nara {
+                make [v]@dist new_d.
+                make next_item lol.
+                make node@next_item v.
+                make dist@next_item new_d.
+                heap | next_item >> heap_push.
+            }
+            make j j + 1.
+        }
+    }
+}
+
+make line >_< tpu@ai.
+make parts line | " " >> ss@tp.
+make i 0.
+loli i < n {
+    make expected [i]@parts >> i@tp.
+    make d [i]@dist.
+    d = expected | "Distance to node should match." >> assert@ut.
+    make i i + 1.
+}
