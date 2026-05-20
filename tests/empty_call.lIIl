@@ -1,0 +1,23 @@
+rm ut.
+rm tp.
+
+<-- Define a parameterless-friendly node (arg is ignored).
+getConst << x {
+    => 42.
+}
+
+getStr << x {
+    => "99".
+}
+
+<-- Test 1: >_< as a statement — result stored in `that`.
+>_< getConst.
+that = 42 | ">_< result should be stored in that." >> assert@ut.
+
+<-- Test 2: >_< as an expression on the RHS of make.
+make n >_< getConst.
+n = 42 | "make n >_< getConst should work." >> assert@ut.
+
+<-- Test 3: expression chain — >_< node >> transform.
+make m >_< getStr >> i@tp.
+m = 99 | ">_< node >> transform chain should work." >> assert@ut.

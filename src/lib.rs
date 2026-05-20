@@ -83,4 +83,15 @@ mod program_tests {
     fn test_ll() {
         exec_program("ll.lIIl");
     }
+
+    #[test]
+    fn test_empty_call() {
+        exec_program("empty_call.lIIl");
+    }
+
+    #[test]
+    fn test_ai() {
+        crate::module::ai::mock_input(["hello world", "42", "first", "second"]);
+        exec_program("ai.lIIl");
+    }
 }

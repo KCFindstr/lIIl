@@ -29,7 +29,9 @@ static PRATT_PARSER: Lazy<PrattParser<Rule>> = Lazy::new(|| {
         .op(Op::infix(Rule::mul_op, Assoc::Left)
             | Op::infix(Rule::div_op, Assoc::Left)
             | Op::infix(Rule::mod_op, Assoc::Left))
-        .op(Op::prefix(Rule::pos_neg_op) | Op::prefix(Rule::not_op))
+        .op(Op::prefix(Rule::pos_neg_op)
+            | Op::prefix(Rule::not_op)
+            | Op::prefix(Rule::empty_call_op))
         .op(Op::infix(Rule::member_op, Assoc::Right))
 });
 
@@ -84,6 +86,10 @@ pub fn parse_expr(pairs: Pairs<Rule>) -> Expr {
             }
             Rule::not_op => Expr::Not(NotExpr {
                 value: Box::new(rhs),
+            }),
+            Rule::empty_call_op => Expr::NodeCall(NodeCallExpr {
+                node: Box::new(rhs),
+                args: Box::new(Expr::Tuple(TupleExpr { values: vec![] })),
             }),
             _ => panic!("parse_expr (prefix): {:?}", op),
         })

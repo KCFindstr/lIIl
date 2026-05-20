@@ -425,8 +425,9 @@ The **a**rtificial **i**nput library reads from standard input.
 
 ```
 rm ai.
-make line "" >> tpu@ai.
-line >> wcop@cpu.
+rm cpu.
+rm tp.
+make n >_< tpu@ai >> i@tp.
 ```
 
 #### `tp` (Type Parser)

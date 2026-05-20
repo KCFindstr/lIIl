@@ -62,7 +62,9 @@ rm_stmt = { rm_stmt_prefix ~ package_name }
 /// ass stmt.
 ass_stmt_prefix = _{ "make " | "mk " }
 
-ass_stmt = { ass_stmt_prefix ~ lvalue ~ cmp_op? ~ expr}
+ass_stmt_cmp_op = _{ !(">_<") ~ cmp_op }
+
+ass_stmt = { ass_stmt_prefix ~ lvalue ~ ass_stmt_cmp_op? ~ expr}
 
 lvalue = { (identifier ~ !member_op) | expr }
 
@@ -140,7 +142,8 @@ tuple_op = { "|" }
 
 not_op = { "!" }
 pos_neg_op = { "+" | "-" }
-expr_prefix = _{ pos_neg_op | not_op }
+empty_call_op = { ">_<" }
+expr_prefix = _{ pos_neg_op | not_op | empty_call_op }
 
 expr_primary = {
   left_paren ~ expr ~ right_paren

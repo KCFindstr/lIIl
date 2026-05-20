@@ -1,4 +1,4 @@
-use std::{io::BufRead, rc::Rc};
+use std::{cell::RefCell, collections::VecDeque, io::BufRead, rc::Rc};
 
 use crate::{
     data::node::NativeNode,
@@ -8,6 +8,20 @@ use crate::{
 
 use super::{IModule, Module, NativeModule};
 
+thread_local! {
+    static MOCK_STDIN: RefCell<VecDeque<String>> = RefCell::new(VecDeque::new());
+}
+
+/// Queue lines to be returned by `tpu` in place of real stdin.
+/// Each call to `tpu` pops one line from the front of the queue.
+/// When the queue is empty, `tpu` falls back to the real stdin.
+#[allow(dead_code)]
+pub fn mock_input(lines: impl IntoIterator<Item = impl Into<String>>) {
+    MOCK_STDIN.with(|mock| {
+        *mock.borrow_mut() = lines.into_iter().map(|s| s.into()).collect();
+    });
+}
+
 pub struct AiModule {
     tpu: VarType,
 }
@@ -16,6 +30,9 @@ impl AiModule {
     pub const NAME: &str = "ai";
 
     fn read_line(_ctx: &ContextRc, _args: &Vec<VarType>) -> Result<VarType, CodeExecError> {
+        if let Some(line) = MOCK_STDIN.with(|mock| mock.borrow_mut().pop_front()) {
+            return Ok(VarType::String(line));
+        }
         let stdin = std::io::stdin();
         let mut line = String::new();
         stdin.lock().read_line(&mut line).ok();

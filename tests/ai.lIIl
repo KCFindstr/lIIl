@@ -1,0 +1,17 @@
+rm ut.
+rm ai.
+rm tp.
+
+<-- Test 1: basic string read.
+>_< tpu@ai.
+that = "hello world" | "tpu should return the mocked line." >> assert@ut.
+
+<-- Test 2: chained directly into a transform.
+make n >_< tpu@ai >> i@tp.
+n = 42 | "tpu chained into i@tp should parse the integer." >> assert@ut.
+
+<-- Test 3: multiple reads consume the queue in order.
+>_< tpu@ai.
+that = "first" | "first mock line should be first." >> assert@ut.
+>_< tpu@ai.
+that = "second" | "second mock line should be second." >> assert@ut.
